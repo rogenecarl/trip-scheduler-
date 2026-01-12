@@ -1,7 +1,21 @@
 import { DashboardHeader } from "@/components/layout";
-import { LayoutDashboard } from "lucide-react";
+import {
+  getDashboardStats,
+  getPendingTrips,
+} from "@/actions/dashboard-actions";
+import { StatsGrid, QuickActions, PendingTrips } from "@/components/dashboard";
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const [statsResult, pendingTripsResult] = await Promise.all([
+    getDashboardStats(),
+    getPendingTrips(5),
+  ]);
+
+  const stats = statsResult.success ? statsResult.data : undefined;
+  const pendingTrips = pendingTripsResult.success
+    ? pendingTripsResult.data
+    : undefined;
+
   return (
     <>
       <DashboardHeader title="Dashboard" />
@@ -15,17 +29,11 @@ export default function DashboardPage() {
           </p>
         </div>
 
-        {/* Placeholder content */}
-        <div className="flex flex-1 items-center justify-center rounded-lg border border-dashed">
-          <div className="flex flex-col items-center gap-2 text-center p-8">
-            <div className="rounded-full bg-muted p-4">
-              <LayoutDashboard className="h-8 w-8 text-muted-foreground" />
-            </div>
-            <h3 className="text-lg font-medium">Dashboard</h3>
-            <p className="text-sm text-muted-foreground max-w-sm">
-              Stats, quick actions, and pending trips will be displayed here.
-            </p>
-          </div>
+        <StatsGrid stats={stats} />
+
+        <div className="grid gap-6 md:grid-cols-2">
+          <QuickActions />
+          <PendingTrips trips={pendingTrips} />
         </div>
       </div>
     </>
