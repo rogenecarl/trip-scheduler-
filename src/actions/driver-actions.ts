@@ -111,21 +111,25 @@ export async function updateDriver(
       return { success: false, error: validated.error.issues[0].message };
     }
 
-    // Delete existing availability and recreate
-    await prisma.driverAvailability.deleteMany({ where: { driverId: id } });
+    // Use transaction for atomicity (delete + update in single operation)
+    const driver = await prisma.$transaction(async (tx) => {
+      // Delete existing availability
+      await tx.driverAvailability.deleteMany({ where: { driverId: id } });
 
-    const driver = await prisma.driver.update({
-      where: { id },
-      data: {
-        name: validated.data.name,
-        availability: {
-          create: validated.data.availability.map((day: number) => ({
-            dayOfWeek: day,
-            isAvailable: true,
-          })),
+      // Update driver with new availability
+      return tx.driver.update({
+        where: { id },
+        data: {
+          name: validated.data.name,
+          availability: {
+            create: validated.data.availability.map((day: number) => ({
+              dayOfWeek: day,
+              isAvailable: true,
+            })),
+          },
         },
-      },
-      include: { availability: true },
+        include: { availability: true },
+      });
     });
 
     revalidatePath("/dashboard/drivers");

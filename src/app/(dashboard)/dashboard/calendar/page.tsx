@@ -1,5 +1,11 @@
+import type { Metadata } from "next";
 import { DashboardHeader } from "@/components/layout";
 import { CalendarDays } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "Calendar",
+  description: "View driver availability by date",
+};
 
 export default function CalendarPage() {
   return (

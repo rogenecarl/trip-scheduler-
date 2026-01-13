@@ -112,33 +112,35 @@ export async function importTripsFromCSV(
   }[]
 ): Promise<ActionResponse<CSVImportResult>> {
   try {
-    let imported = 0;
-    let skipped = 0;
+    // Get all existing trip IDs in a single query (avoid N+1)
+    const tripIds = trips.map((t) => t.tripId);
+    const existingTrips = await prisma.trip.findMany({
+      where: { tripId: { in: tripIds } },
+      select: { tripId: true },
+    });
+    const existingIds = new Set(existingTrips.map((t) => t.tripId));
 
-    for (const trip of trips) {
-      const existing = await prisma.trip.findFirst({
-        where: { tripId: trip.tripId },
+    // Filter to only new trips
+    const newTrips = trips.filter((t) => !existingIds.has(t.tripId));
+    const skipped = trips.length - newTrips.length;
+
+    // Bulk insert with createMany (much faster than individual creates)
+    if (newTrips.length > 0) {
+      await prisma.trip.createMany({
+        data: newTrips.map((trip) => ({
+          tripId: trip.tripId,
+          tripDate: trip.tripDate,
+          dayOfWeek: trip.dayOfWeek,
+          tripStage: "Upcoming",
+        })),
+        skipDuplicates: true,
       });
-
-      if (!existing) {
-        await prisma.trip.create({
-          data: {
-            tripId: trip.tripId,
-            tripDate: trip.tripDate,
-            dayOfWeek: trip.dayOfWeek,
-            tripStage: "Upcoming",
-          },
-        });
-        imported++;
-      } else {
-        skipped++;
-      }
     }
 
     revalidatePath("/dashboard/trips");
     revalidatePath("/dashboard");
 
-    return { success: true, data: { imported, skipped } };
+    return { success: true, data: { imported: newTrips.length, skipped } };
   } catch (error) {
     console.error("Failed to import trips:", error);
     return { success: false, error: "Failed to import trips" };

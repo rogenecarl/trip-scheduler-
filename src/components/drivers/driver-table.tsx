@@ -19,8 +19,12 @@ import { useDrivers } from "@/hooks/use-drivers";
 import type { Driver } from "@/lib/types";
 import { Pencil, Search, Trash2, Users, UserPlus } from "lucide-react";
 
-export function DriverTable() {
-  const { data: drivers, isLoading, error } = useDrivers();
+interface DriverTableProps {
+  initialData?: Driver[];
+}
+
+export function DriverTable({ initialData }: DriverTableProps) {
+  const { data: drivers, isLoading, error } = useDrivers(initialData);
   const [searchQuery, setSearchQuery] = useState("");
   const [editingDriver, setEditingDriver] = useState<Driver | null>(null);
   const [deletingDriver, setDeletingDriver] = useState<Driver | null>(null);

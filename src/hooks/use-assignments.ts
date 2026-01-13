@@ -10,12 +10,13 @@ import {
   getAvailableDriversForDay,
 } from "@/actions/assignment-actions";
 import { autoAssignDrivers } from "@/actions/ai-actions";
+import type { Trip } from "@/lib/types";
 
 // ============================================
 // QUERY: LIST ALL ASSIGNMENTS
 // ============================================
 
-export function useAssignments() {
+export function useAssignments(initialData?: Trip[]) {
   return useQuery({
     queryKey: queryKeys.assignments.list(),
     queryFn: async () => {
@@ -23,6 +24,8 @@ export function useAssignments() {
       if (!result.success) throw new Error(result.error);
       return result.data;
     },
+    initialData,
+    staleTime: initialData ? 60 * 1000 : 0, // Keep initial data fresh for 1 minute
   });
 }
 
@@ -77,9 +80,11 @@ export function useUpdateAssignment() {
       return result.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.assignments.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.trips.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all });
+      // Targeted invalidation - only invalidate list queries, not detail queries
+      queryClient.invalidateQueries({ queryKey: queryKeys.assignments.list() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.trips.list() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.stats() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.pendingTrips() });
       toast.success("Assignment updated successfully");
     },
     onError: (error: Error) => {
@@ -98,9 +103,11 @@ export function useAIAssign() {
   return useMutation({
     mutationFn: autoAssignDrivers,
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.assignments.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.trips.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all });
+      // Targeted invalidation for AI assignment
+      queryClient.invalidateQueries({ queryKey: queryKeys.assignments.list() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.trips.list() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.stats() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.pendingTrips() });
 
       // Show only ONE toast for success or failure
       // Details are shown in the modal, so we keep the toast simple

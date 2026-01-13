@@ -13,12 +13,13 @@ import {
   importTripsFromCSV,
   deleteTrip,
 } from "@/actions/trip-actions";
+import type { Trip } from "@/lib/types";
 
 // ============================================
 // QUERY: List all trips
 // ============================================
 
-export function useTrips() {
+export function useTrips(initialData?: Trip[]) {
   return useQuery({
     queryKey: queryKeys.trips.list(),
     queryFn: async () => {
@@ -26,6 +27,8 @@ export function useTrips() {
       if (!result.success) throw new Error(result.error);
       return result.data;
     },
+    initialData,
+    staleTime: initialData ? 60 * 1000 : 0, // Keep initial data fresh for 1 minute
   });
 }
 
@@ -46,9 +49,11 @@ export function useCreateTrip() {
       return result.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.trips.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.assignments.all });
+      // Targeted invalidation
+      queryClient.invalidateQueries({ queryKey: queryKeys.trips.list() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.assignments.list() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.stats() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.pendingTrips() });
       toast.success("Trip created successfully");
     },
     onError: (error: Error) => {
@@ -73,9 +78,11 @@ export function useImportTrips() {
       return result.data;
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.trips.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.assignments.all });
+      // Targeted invalidation
+      queryClient.invalidateQueries({ queryKey: queryKeys.trips.list() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.assignments.list() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.stats() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.pendingTrips() });
       toast.success(
         `Imported ${data.imported} trips${data.skipped > 0 ? `, ${data.skipped} skipped` : ""}`
       );
@@ -100,9 +107,11 @@ export function useDeleteTrip() {
       return result.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.trips.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.assignments.all });
+      // Targeted invalidation
+      queryClient.invalidateQueries({ queryKey: queryKeys.trips.list() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.assignments.list() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.stats() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.pendingTrips() });
       toast.success("Trip deleted successfully");
     },
     onError: (error: Error) => {

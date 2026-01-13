@@ -44,7 +44,7 @@ export function AvailabilityPicker({
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
               "disabled:pointer-events-none disabled:opacity-50",
               isSelected
-                ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                ? "bg-emerald-600 text-primary-foreground hover:bg-emerald-700"
                 : "bg-muted text-muted-foreground hover:bg-muted/80"
             )}
           >
@@ -82,7 +82,7 @@ export function AvailabilityDisplay({
               "flex items-center justify-center rounded-full font-medium",
               size === "sm" ? "h-6 w-6 text-[10px]" : "h-8 w-8 text-xs",
               isAvailable
-                ? "bg-primary text-primary-foreground"
+                ? "bg-emerald-600 text-primary-foreground"
                 : "bg-muted text-muted-foreground"
             )}
           >

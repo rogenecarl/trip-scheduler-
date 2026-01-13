@@ -30,7 +30,7 @@ export function StatsGrid({ stats, isLoading }: StatsGridProps) {
       iconClassName: "bg-emerald-100 text-emerald-600",
     },
     {
-      label: "Pending",
+      label: "Pending this week",
       value: stats?.pendingTrips ?? 0,
       icon: Clock,
       iconClassName: "bg-amber-100 text-amber-600",

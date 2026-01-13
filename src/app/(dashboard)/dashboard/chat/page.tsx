@@ -1,5 +1,11 @@
+import type { Metadata } from "next";
 import { DashboardHeader } from "@/components/layout";
 import { MessageSquare } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "AI Chat",
+  description: "Ask questions about schedules and drivers",
+};
 
 export default function ChatPage() {
   return (

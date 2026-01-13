@@ -13,12 +13,13 @@ import {
   updateDriver,
   deleteDriver,
 } from "@/actions/driver-actions";
+import type { Driver } from "@/lib/types";
 
 // ============================================
 // QUERY: List all drivers
 // ============================================
 
-export function useDrivers() {
+export function useDrivers(initialData?: Driver[]) {
   return useQuery({
     queryKey: queryKeys.drivers.list(),
     queryFn: async () => {
@@ -26,6 +27,8 @@ export function useDrivers() {
       if (!result.success) throw new Error(result.error);
       return result.data;
     },
+    initialData,
+    staleTime: initialData ? 60 * 1000 : 0, // Keep initial data fresh for 1 minute
   });
 }
 
@@ -46,8 +49,9 @@ export function useCreateDriver() {
       return result.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.drivers.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all });
+      // Targeted invalidation
+      queryClient.invalidateQueries({ queryKey: queryKeys.drivers.list() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.stats() });
       toast.success("Driver created successfully");
     },
     onError: (error: Error) => {
@@ -79,8 +83,9 @@ export function useUpdateDriver() {
       return result.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.drivers.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.assignments.all });
+      // Targeted invalidation
+      queryClient.invalidateQueries({ queryKey: queryKeys.drivers.list() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.assignments.list() });
       toast.success("Driver updated successfully");
     },
     onError: (error: Error) => {
@@ -103,8 +108,9 @@ export function useDeleteDriver() {
       return result.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.drivers.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all });
+      // Targeted invalidation
+      queryClient.invalidateQueries({ queryKey: queryKeys.drivers.list() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.stats() });
       toast.success("Driver deleted successfully");
     },
     onError: (error: Error) => {

@@ -65,7 +65,7 @@ const floatSlowVariants = {
 
 export default function HeroSection() {
   return (
-    <section className="relative min-h-[calc(100vh-4rem)] flex items-center justify-center overflow-hidden bg-background">
+    <section className="relative min-h-screen pt-16 flex items-center justify-center overflow-hidden bg-gradient-to-br from-yellow-50 via-white to-emerald-50">
       {/* Animated background elements */}
       <div className="absolute inset-0 -z-10">
         {/* Floating gradient orbs */}
@@ -109,8 +109,8 @@ export default function HeroSection() {
             variants={itemVariants}
           >
             <span className="block">Smart Trip Scheduling</span>
-            <span className="block bg-gradient-to-r from-primary via-primary/70 to-primary bg-clip-text text-transparent">
-              Made Effortless
+            <span className="block bg-linear-to-r from-cyan-500 via-primary/70 to-emerald-200 bg-clip-text text-transparent">
+              Powered By AI
             </span>
           </motion.h1>
 
@@ -132,7 +132,7 @@ export default function HeroSection() {
             <Button
               asChild
               size="lg"
-              className="gap-2 group transition-all duration-300 hover:scale-105 hover:shadow-lg"
+              className="gap-2 group transition-all duration-300 hover:scale-105 hover:bg-cyan-800 bg-cyan-700"
             >
               <Link href="/dashboard">
                 Get Started

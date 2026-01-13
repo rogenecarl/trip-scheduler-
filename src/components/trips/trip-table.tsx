@@ -29,8 +29,12 @@ import { Package, Search, Trash2 } from "lucide-react";
 
 type StatusFilter = "all" | "pending" | "assigned";
 
-export function TripTable() {
-  const { data: trips, isLoading, error } = useTrips();
+interface TripTableProps {
+  initialData?: Trip[];
+}
+
+export function TripTable({ initialData }: TripTableProps) {
+  const { data: trips, isLoading, error } = useTrips(initialData);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [deletingTrip, setDeletingTrip] = useState<Trip | null>(null);

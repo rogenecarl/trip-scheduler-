@@ -1,9 +1,15 @@
+import type { Metadata } from "next";
 import { DashboardHeader } from "@/components/layout";
 import {
   getDashboardStats,
   getPendingTrips,
 } from "@/actions/dashboard-actions";
 import { StatsGrid, QuickActions, PendingTrips } from "@/components/dashboard";
+
+export const metadata: Metadata = {
+  title: "Dashboard",
+  description: "Overview of your trip scheduling system",
+};
 
 export default async function DashboardPage() {
   const [statsResult, pendingTripsResult] = await Promise.all([

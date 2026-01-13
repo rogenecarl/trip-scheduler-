@@ -35,11 +35,12 @@ import { ClipboardCheck, Search, Sparkles } from "lucide-react";
 type StatusFilter = "all" | "pending" | "assigned";
 
 interface AssignmentTableProps {
+  initialData?: Trip[];
   onPendingCountChange?: (count: number) => void;
 }
 
-export function AssignmentTable({ onPendingCountChange }: AssignmentTableProps) {
-  const { data: assignments, isLoading, error } = useAssignments();
+export function AssignmentTable({ initialData, onPendingCountChange }: AssignmentTableProps) {
+  const { data: assignments, isLoading, error } = useAssignments(initialData);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
 

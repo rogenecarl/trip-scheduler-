@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Menu, MapPin } from "lucide-react";
+import { Menu, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -12,7 +12,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { LANDING_NAV_ITEMS } from "@/lib/constants";
-import { motion } from "framer-motion";
+import { motion, useScroll, useMotionValueEvent } from "framer-motion";
 
 const navVariants = {
   hidden: { opacity: 0, y: -20 },
@@ -41,13 +41,25 @@ const linkVariants = {
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const { scrollY } = useScroll();
+
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    setIsScrolled(latest > 50);
+  });
 
   return (
     <motion.header
-      className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60"
+      className="fixed top-0 left-0 right-0 z-50 w-full transition-all duration-300"
       initial="hidden"
       animate="visible"
       variants={navVariants}
+      style={{
+        backgroundColor: isScrolled ? "rgba(255, 255, 255, 0.9)" : "transparent",
+        backdropFilter: isScrolled ? "blur(12px)" : "none",
+        borderBottom: isScrolled ? "1px solid rgba(0, 0, 0, 0.1)" : "none",
+        boxShadow: isScrolled ? "0 1px 3px rgba(0, 0, 0, 0.05)" : "none",
+      }}
     >
       <div className="max-w-7xl mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Logo */}
@@ -61,13 +73,15 @@ export default function Navbar() {
             className="flex items-center gap-2 group transition-opacity hover:opacity-80"
           >
             <motion.div
-              className="flex size-8 items-center justify-center rounded-lg bg-primary"
+              className="flex size-9 items-center justify-center rounded-xl bg-cyan-700 text-primary-foreground shadow-sm"
               whileHover={{ scale: 1.1, rotate: 5 }}
               transition={{ type: "spring", stiffness: 400, damping: 10 }}
             >
-              <MapPin className="size-5 text-primary-foreground" />
+              <Truck className="size-5" />
             </motion.div>
-            <span className="text-lg font-semibold">Trip Scheduler</span>
+            <span className="text-lg font-semibold text-foreground">
+              Trip Scheduler
+            </span>
           </Link>
         </motion.div>
 
@@ -83,11 +97,11 @@ export default function Navbar() {
             >
               <Link
                 href={item.href}
-                className="relative text-sm font-medium text-muted-foreground transition-colors hover:text-foreground group"
+                className="relative text-sm font-medium text-foreground/70 transition-colors hover:text-foreground group"
               >
                 {item.label}
                 <motion.span
-                  className="absolute -bottom-1 left-0 h-0.5 bg-primary"
+                  className="absolute -bottom-1 left-0 h-0.5 bg-cyan-700"
                   initial={{ width: 0 }}
                   whileHover={{ width: "100%" }}
                   transition={{ duration: 0.3, ease: "easeInOut" }}
@@ -109,8 +123,11 @@ export default function Navbar() {
             whileTap={{ scale: 0.98 }}
             transition={{ type: "spring", stiffness: 400, damping: 17 }}
           >
-            <Button asChild className="shadow-sm hover:shadow-md transition-shadow">
-              <Link href="/dashboard">Get Started</Link>
+            <Button
+              asChild
+              className="shadow-sm hover:bg-cyan-800 transition-all bg-cyan-700 hover:shadow-md"
+            >
+              <Link href="/dashboard">Dashboard</Link>
             </Button>
           </motion.div>
         </motion.div>
@@ -118,11 +135,8 @@ export default function Navbar() {
         {/* Mobile Menu */}
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
           <SheetTrigger asChild className="md:hidden">
-            <motion.div
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Button variant="ghost" size="icon">
+            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
+              <Button variant="ghost" size="icon" className="text-foreground">
                 <Menu className="size-5" />
                 <span className="sr-only">Toggle menu</span>
               </Button>
@@ -131,8 +145,8 @@ export default function Navbar() {
           <SheetContent side="right" className="w-full sm:max-w-sm">
             <SheetHeader>
               <SheetTitle className="flex items-center gap-2">
-                <div className="flex size-8 items-center justify-center rounded-lg bg-primary">
-                  <MapPin className="size-5 text-primary-foreground" />
+                <div className="flex size-8 items-center justify-center rounded-lg bg-cyan-700 text-primary-foreground">
+                  <Truck className="size-5" />
                 </div>
                 <span>Trip Scheduler</span>
               </SheetTitle>
@@ -162,10 +176,10 @@ export default function Navbar() {
               >
                 <Button
                   asChild
-                  className="w-full"
+                  className="w-full bg-cyan-700 hover:bg-cyan-800"
                   onClick={() => setIsOpen(false)}
                 >
-                  <Link href="/dashboard">Get Started</Link>
+                  <Link href="/dashboard">Dashboard</Link>
                 </Button>
               </motion.div>
             </nav>
