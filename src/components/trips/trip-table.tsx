@@ -21,44 +21,58 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { TablePagination } from "@/components/ui/table-pagination";
 import { DeleteTripDialog } from "./delete-trip-dialog";
-import { useTrips } from "@/hooks/use-trips";
+import { usePaginatedTrips } from "@/hooks/use-paginated-trips";
 import { DAY_NAMES_SHORT } from "@/lib/types";
 import type { Trip } from "@/lib/types";
 import { Package, Search, Trash2 } from "lucide-react";
 
 type StatusFilter = "all" | "pending" | "assigned";
+const DEFAULT_PAGE_SIZE = 20;
 
-interface TripTableProps {
-  initialData?: Trip[];
-}
-
-export function TripTable({ initialData }: TripTableProps) {
-  const { data: trips, isLoading, error } = useTrips(initialData);
+export function TripTable() {
+  // Pagination and filter state
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [deletingTrip, setDeletingTrip] = useState<Trip | null>(null);
 
-  // Filter trips based on search and status
-  const filteredTrips = useMemo(() => {
-    if (!trips) return [];
+  // Fetch paginated data (no server-side filtering)
+  const { data, isLoading, error } = usePaginatedTrips({
+    page,
+    pageSize,
+  });
 
-    return trips.filter((trip) => {
-      // Search filter
-      const matchesSearch =
-        !searchQuery.trim() ||
-        trip.tripId.toLowerCase().includes(searchQuery.toLowerCase());
+  const pagination = data?.pagination;
 
-      // Status filter
-      const isAssigned = !!trip.assignment;
-      const matchesStatus =
-        statusFilter === "all" ||
-        (statusFilter === "assigned" && isAssigned) ||
-        (statusFilter === "pending" && !isAssigned);
+  // Client-side filtering for instant search and status filter
+  const trips = useMemo(() => {
+    let filtered = data?.data ?? [];
 
-      return matchesSearch && matchesStatus;
-    });
-  }, [trips, searchQuery, statusFilter]);
+    // Filter by status
+    if (statusFilter === "pending") {
+      filtered = filtered.filter((trip) => !trip.assignment);
+    } else if (statusFilter === "assigned") {
+      filtered = filtered.filter((trip) => !!trip.assignment);
+    }
+
+    // Filter by search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter((trip) =>
+        trip.tripId.toLowerCase().includes(query)
+      );
+    }
+
+    return filtered;
+  }, [data?.data, searchQuery, statusFilter]);
+
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize);
+    setPage(1);
+  };
 
   if (error) {
     return (
@@ -73,6 +87,8 @@ export function TripTable({ initialData }: TripTableProps) {
       </div>
     );
   }
+
+  const hasFilters = searchQuery.length > 0 || statusFilter !== "all";
 
   return (
     <div className="space-y-4">
@@ -105,8 +121,8 @@ export function TripTable({ initialData }: TripTableProps) {
       {/* Table */}
       {isLoading ? (
         <TripTableSkeleton />
-      ) : filteredTrips.length === 0 ? (
-        <EmptyState hasFilters={searchQuery.trim().length > 0 || statusFilter !== "all"} />
+      ) : trips.length === 0 ? (
+        <EmptyState hasFilters={hasFilters} />
       ) : (
         <>
           {/* Desktop Table */}
@@ -123,7 +139,7 @@ export function TripTable({ initialData }: TripTableProps) {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredTrips.map((trip) => (
+                {trips.map((trip) => (
                   <TableRow key={trip.id} className="hover:bg-muted/50">
                     <TableCell className="font-mono text-sm">
                       {trip.tripId}
@@ -177,7 +193,7 @@ export function TripTable({ initialData }: TripTableProps) {
 
           {/* Mobile Cards */}
           <div className="md:hidden space-y-3">
-            {filteredTrips.map((trip) => (
+            {trips.map((trip) => (
               <div key={trip.id} className="rounded-lg border p-4 space-y-3">
                 <div className="flex items-start justify-between">
                   <div>
@@ -226,10 +242,15 @@ export function TripTable({ initialData }: TripTableProps) {
             ))}
           </div>
 
-          {/* Results count */}
-          <p className="text-sm text-muted-foreground">
-            Showing {filteredTrips.length} of {trips?.length ?? 0} trips
-          </p>
+          {/* Pagination */}
+          {pagination && (
+            <TablePagination
+              pagination={pagination}
+              onPageChange={setPage}
+              onPageSizeChange={handlePageSizeChange}
+              isLoading={isLoading}
+            />
+          )}
         </>
       )}
 

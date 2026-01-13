@@ -1,9 +1,15 @@
 "use server";
 
 import prisma from "@/lib/prisma";
+import { Prisma } from "@/lib/generated/prisma/client";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import type { ActionResponse, Driver } from "@/lib/types";
+import type {
+  ActionResponse,
+  Driver,
+  DriverPaginationParams,
+  PaginatedResponse,
+} from "@/lib/types";
 
 // ============================================
 // VALIDATION SCHEMAS
@@ -29,6 +35,59 @@ export async function getDrivers(): Promise<ActionResponse<Driver[]>> {
     return { success: true, data: drivers as Driver[] };
   } catch (error) {
     console.error("Failed to fetch drivers:", error);
+    return { success: false, error: "Failed to fetch drivers" };
+  }
+}
+
+// ============================================
+// GET DRIVERS PAGINATED
+// ============================================
+
+export async function getDriversPaginated(
+  params: DriverPaginationParams
+): Promise<ActionResponse<PaginatedResponse<Driver>>> {
+  try {
+    const { page, pageSize, search } = params;
+    const skip = (page - 1) * pageSize;
+
+    // Build where clause for server-side filtering
+    const where: Prisma.DriverWhereInput = {
+      isActive: true,
+      ...(search && {
+        name: { contains: search, mode: "insensitive" },
+      }),
+    };
+
+    // Execute count and data queries in parallel
+    const [totalItems, drivers] = await Promise.all([
+      prisma.driver.count({ where }),
+      prisma.driver.findMany({
+        where,
+        include: { availability: true },
+        orderBy: { name: "asc" },
+        skip,
+        take: pageSize,
+      }),
+    ]);
+
+    const totalPages = Math.ceil(totalItems / pageSize);
+
+    return {
+      success: true,
+      data: {
+        data: drivers as Driver[],
+        pagination: {
+          page,
+          pageSize,
+          totalItems,
+          totalPages,
+          hasNextPage: page < totalPages,
+          hasPreviousPage: page > 1,
+        },
+      },
+    };
+  } catch (error) {
+    console.error("Failed to fetch paginated drivers:", error);
     return { success: false, error: "Failed to fetch drivers" };
   }
 }

@@ -1,17 +1,13 @@
 import type { Metadata } from "next";
 import { DashboardHeader } from "@/components/layout";
 import { DriverTable } from "@/components/drivers";
-import { getDrivers } from "@/actions/driver-actions";
 
 export const metadata: Metadata = {
   title: "Drivers",
   description: "Manage your drivers and their availability",
 };
 
-export default async function DriversPage() {
-  const result = await getDrivers();
-  const initialDrivers = result.success ? result.data : [];
-
+export default function DriversPage() {
   return (
     <>
       <DashboardHeader
@@ -31,7 +27,7 @@ export default async function DriversPage() {
           </p>
         </div>
 
-        <DriverTable initialData={initialDrivers} />
+        <DriverTable />
       </div>
     </>
   );

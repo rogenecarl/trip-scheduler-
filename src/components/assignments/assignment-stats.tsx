@@ -5,15 +5,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAssignments } from "@/hooks/use-assignments";
 import { Package, CheckCircle, Clock } from "lucide-react";
-import type { Trip } from "@/lib/types";
 
-interface AssignmentStatsProps {
-  initialData?: Trip[];
-}
-
-export function AssignmentStats({ initialData }: AssignmentStatsProps) {
-  // Use assignments data to compute stats (avoids extra DB round trip)
-  const { data: assignments, isLoading } = useAssignments(initialData);
+export function AssignmentStats() {
+  // Use assignments data to compute stats
+  const { data: assignments, isLoading } = useAssignments();
 
   // Compute stats from assignments data (memoized)
   const stats = useMemo(() => {

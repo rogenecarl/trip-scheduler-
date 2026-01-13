@@ -12,14 +12,9 @@ import { CSVImport } from "@/components/trips/csv-import";
 import { CSVPreview } from "@/components/trips/csv-preview";
 import { useCreateTrip, useImportTrips } from "@/hooks/use-trips";
 import type { CSVParseResult } from "@/lib/csv-parser";
-import type { Trip } from "@/lib/types";
 import { FileSpreadsheet, PenLine, Plus } from "lucide-react";
 
-interface TripsClientProps {
-  initialTrips: Trip[];
-}
-
-export function TripsClient({ initialTrips }: TripsClientProps) {
+export function TripsClient() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<string>("manual");
   const [csvResult, setCsvResult] = useState<CSVParseResult | null>(null);
@@ -135,7 +130,7 @@ export function TripsClient({ initialTrips }: TripsClientProps) {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <TripTable initialData={initialTrips} />
+            <TripTable />
           </CardContent>
         </Card>
       </div>

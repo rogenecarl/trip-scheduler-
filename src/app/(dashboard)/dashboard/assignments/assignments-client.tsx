@@ -9,16 +9,11 @@ import {
   AutoAssignButton,
   ExportDropdown,
 } from "@/components/assignments";
-import type { Trip } from "@/lib/types";
+import { useAssignments } from "@/hooks/use-assignments";
 
-interface AssignmentsClientProps {
-  initialAssignments: Trip[];
-}
-
-export function AssignmentsClient({ initialAssignments }: AssignmentsClientProps) {
-  const [pendingCount, setPendingCount] = useState(() =>
-    initialAssignments.filter((trip) => !trip.assignment).length
-  );
+export function AssignmentsClient() {
+  const { data: assignments } = useAssignments();
+  const [pendingCount, setPendingCount] = useState(0);
 
   const handlePendingCountChange = useCallback((count: number) => {
     setPendingCount(count);
@@ -46,15 +41,15 @@ export function AssignmentsClient({ initialAssignments }: AssignmentsClientProps
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">
             <ExportDropdown
-              assignments={initialAssignments}
-              disabled={initialAssignments.length === 0}
+              assignments={assignments ?? []}
+              disabled={!assignments || assignments.length === 0}
             />
             <AutoAssignButton pendingCount={pendingCount} />
           </div>
         </div>
 
-        {/* Stats Cards - derives stats from assignments data */}
-        <AssignmentStats initialData={initialAssignments} />
+        {/* Stats Cards */}
+        <AssignmentStats />
 
         {/* Assignments Table */}
         <Card>
@@ -62,10 +57,7 @@ export function AssignmentsClient({ initialAssignments }: AssignmentsClientProps
             <CardTitle className="text-lg font-medium">All Assignments</CardTitle>
           </CardHeader>
           <CardContent>
-            <AssignmentTable
-              initialData={initialAssignments}
-              onPendingCountChange={handlePendingCountChange}
-            />
+            <AssignmentTable onPendingCountChange={handlePendingCountChange} />
           </CardContent>
         </Card>
       </div>

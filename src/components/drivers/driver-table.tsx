@@ -12,34 +12,50 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { TablePagination } from "@/components/ui/table-pagination";
 import { AvailabilityDisplay } from "./availability-picker";
 import { DriverDialog } from "./driver-dialog";
 import { DeleteDriverDialog } from "./delete-driver-dialog";
-import { useDrivers } from "@/hooks/use-drivers";
+import { usePaginatedDrivers } from "@/hooks/use-paginated-drivers";
 import type { Driver } from "@/lib/types";
 import { Pencil, Search, Trash2, Users, UserPlus } from "lucide-react";
 
-interface DriverTableProps {
-  initialData?: Driver[];
-}
+const DEFAULT_PAGE_SIZE = 20;
 
-export function DriverTable({ initialData }: DriverTableProps) {
-  const { data: drivers, isLoading, error } = useDrivers(initialData);
+export function DriverTable() {
+  // Pagination state
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Fetch paginated data (no server-side filtering)
+  const { data, isLoading, error } = usePaginatedDrivers({
+    page,
+    pageSize,
+  });
+
+  // Dialog states
   const [editingDriver, setEditingDriver] = useState<Driver | null>(null);
   const [deletingDriver, setDeletingDriver] = useState<Driver | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
-  // Filter drivers based on search
-  const filteredDrivers = useMemo(() => {
-    if (!drivers) return [];
-    if (!searchQuery.trim()) return drivers;
+  const pagination = data?.pagination;
 
+  // Client-side filtering for instant search
+  const drivers = useMemo(() => {
+    const allDrivers = data?.data ?? [];
+    if (!searchQuery.trim()) return allDrivers;
     const query = searchQuery.toLowerCase();
-    return drivers.filter((driver) =>
+    return allDrivers.filter((driver) =>
       driver.name.toLowerCase().includes(query)
     );
-  }, [drivers, searchQuery]);
+  }, [data?.data, searchQuery]);
+
+  // Handle page size change - reset to page 1
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize);
+    setPage(1);
+  };
 
   if (error) {
     return (
@@ -77,9 +93,9 @@ export function DriverTable({ initialData }: DriverTableProps) {
       {/* Table */}
       {isLoading ? (
         <DriverTableSkeleton />
-      ) : filteredDrivers.length === 0 ? (
+      ) : drivers.length === 0 ? (
         <EmptyState
-          hasSearch={searchQuery.trim().length > 0}
+          hasSearch={searchQuery.length > 0}
           onAddClick={() => setIsAddDialogOpen(true)}
         />
       ) : (
@@ -91,11 +107,11 @@ export function DriverTable({ initialData }: DriverTableProps) {
                 <TableRow className="bg-muted/50">
                   <TableHead className="font-medium">Name</TableHead>
                   <TableHead className="font-medium">Availability</TableHead>
-                  <TableHead className="font-medium w-[100px]">Actions</TableHead>
+                  <TableHead className="font-medium w-25">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredDrivers.map((driver) => (
+                {drivers.map((driver) => (
                   <TableRow key={driver.id} className="hover:bg-muted/50">
                     <TableCell className="font-medium">{driver.name}</TableCell>
                     <TableCell>
@@ -133,7 +149,7 @@ export function DriverTable({ initialData }: DriverTableProps) {
 
           {/* Mobile Cards */}
           <div className="md:hidden space-y-3">
-            {filteredDrivers.map((driver) => (
+            {drivers.map((driver) => (
               <div
                 key={driver.id}
                 className="rounded-lg border p-4 space-y-3"
@@ -173,10 +189,15 @@ export function DriverTable({ initialData }: DriverTableProps) {
             ))}
           </div>
 
-          {/* Results count */}
-          <p className="text-sm text-muted-foreground">
-            Showing {filteredDrivers.length} of {drivers?.length ?? 0} drivers
-          </p>
+          {/* Pagination */}
+          {pagination && (
+            <TablePagination
+              pagination={pagination}
+              onPageChange={setPage}
+              onPageSizeChange={handlePageSizeChange}
+              isLoading={isLoading}
+            />
+          )}
         </>
       )}
 
@@ -210,7 +231,7 @@ function DriverTableSkeleton() {
           <TableRow className="bg-muted/50">
             <TableHead className="font-medium">Name</TableHead>
             <TableHead className="font-medium">Availability</TableHead>
-            <TableHead className="font-medium w-[100px]">Actions</TableHead>
+            <TableHead className="font-medium w-25">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

@@ -165,3 +165,41 @@ export interface CSVImportResult {
   imported: number;
   skipped: number;
 }
+
+export interface CSVImportResultEnhanced extends CSVImportResult {
+  duplicateTripIds: string[];
+}
+
+// ============================================
+// PAGINATION TYPES
+// ============================================
+
+export interface PaginationParams {
+  page: number;
+  pageSize: number;
+  search?: string;
+}
+
+export interface PaginationMeta {
+  page: number;
+  pageSize: number;
+  totalItems: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  pagination: PaginationMeta;
+}
+
+export type DriverPaginationParams = PaginationParams;
+
+export interface TripPaginationParams extends PaginationParams {
+  status?: "all" | "pending" | "assigned";
+}
+
+export interface AssignmentPaginationParams extends PaginationParams {
+  status?: "all" | "pending" | "assigned";
+}

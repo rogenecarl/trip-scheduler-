@@ -3,11 +3,19 @@
 // ============================================
 // Centralized query key factory for consistent cache management
 
+import type {
+  DriverPaginationParams,
+  TripPaginationParams,
+  AssignmentPaginationParams,
+} from "./types";
+
 export const queryKeys = {
   // Drivers
   drivers: {
     all: ["drivers"] as const,
     list: () => [...queryKeys.drivers.all, "list"] as const,
+    paginated: (params: DriverPaginationParams) =>
+      [...queryKeys.drivers.all, "paginated", params] as const,
     detail: (id: string) => [...queryKeys.drivers.all, "detail", id] as const,
     available: (dayOfWeek: number) =>
       [...queryKeys.drivers.all, "available", dayOfWeek] as const,
@@ -17,6 +25,8 @@ export const queryKeys = {
   trips: {
     all: ["trips"] as const,
     list: () => [...queryKeys.trips.all, "list"] as const,
+    paginated: (params: TripPaginationParams) =>
+      [...queryKeys.trips.all, "paginated", params] as const,
     detail: (id: string) => [...queryKeys.trips.all, "detail", id] as const,
     byDate: (date: string) => [...queryKeys.trips.all, "byDate", date] as const,
     pending: () => [...queryKeys.trips.all, "pending"] as const,
@@ -26,6 +36,8 @@ export const queryKeys = {
   assignments: {
     all: ["assignments"] as const,
     list: () => [...queryKeys.assignments.all, "list"] as const,
+    paginated: (params: AssignmentPaginationParams) =>
+      [...queryKeys.assignments.all, "paginated", params] as const,
     stats: () => [...queryKeys.assignments.all, "stats"] as const,
     byDriver: (driverId: string) =>
       [...queryKeys.assignments.all, "byDriver", driverId] as const,

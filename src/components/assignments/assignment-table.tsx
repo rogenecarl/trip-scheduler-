@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { format } from "date-fns";
 import {
   Table,
@@ -26,57 +26,71 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { TablePagination } from "@/components/ui/table-pagination";
 import { DriverSelect } from "./driver-select";
-import { useAssignments } from "@/hooks/use-assignments";
+import { usePaginatedAssignments } from "@/hooks/use-paginated-assignments";
 import { DAY_NAMES_SHORT } from "@/lib/types";
 import type { Trip } from "@/lib/types";
 import { ClipboardCheck, Search, Sparkles } from "lucide-react";
 
 type StatusFilter = "all" | "pending" | "assigned";
+const DEFAULT_PAGE_SIZE = 20;
 
 interface AssignmentTableProps {
-  initialData?: Trip[];
   onPendingCountChange?: (count: number) => void;
 }
 
-export function AssignmentTable({ initialData, onPendingCountChange }: AssignmentTableProps) {
-  const { data: assignments, isLoading, error } = useAssignments(initialData);
+export function AssignmentTable({ onPendingCountChange }: AssignmentTableProps) {
+  // Pagination and filter state
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
 
-  // Filter assignments based on search and status
-  const filteredAssignments = useMemo(() => {
-    if (!assignments) return [];
+  // Fetch paginated data (no server-side filtering)
+  const { data, isLoading, error } = usePaginatedAssignments({
+    page,
+    pageSize,
+  });
 
-    return assignments.filter((trip) => {
-      // Search filter
-      const matchesSearch =
-        !searchQuery.trim() ||
-        trip.tripId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        trip.assignment?.driver?.name
-          ?.toLowerCase()
-          .includes(searchQuery.toLowerCase());
+  const pagination = data?.pagination;
 
-      // Status filter
-      const isAssigned = !!trip.assignment;
-      const matchesStatus =
-        statusFilter === "all" ||
-        (statusFilter === "assigned" && isAssigned) ||
-        (statusFilter === "pending" && !isAssigned);
+  // Client-side filtering for instant search and status filter
+  const assignments = useMemo(() => {
+    let filtered = data?.data ?? [];
 
-      return matchesSearch && matchesStatus;
-    });
-  }, [assignments, searchQuery, statusFilter]);
+    // Filter by status
+    if (statusFilter === "pending") {
+      filtered = filtered.filter((trip) => !trip.assignment);
+    } else if (statusFilter === "assigned") {
+      filtered = filtered.filter((trip) => !!trip.assignment);
+    }
 
-  // Calculate pending count
-  const pendingCount = useMemo(() => {
-    return assignments?.filter((trip) => !trip.assignment).length ?? 0;
-  }, [assignments]);
+    // Filter by search query (trip ID or driver name)
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (trip) =>
+          trip.tripId.toLowerCase().includes(query) ||
+          trip.assignment?.driver?.name?.toLowerCase().includes(query)
+      );
+    }
+
+    return filtered;
+  }, [data?.data, searchQuery, statusFilter]);
+
+  // Calculate pending count from filtered data (for UI purposes)
+  const pendingCount = assignments.filter((trip) => !trip.assignment).length;
 
   // Notify parent of pending count changes
   useEffect(() => {
     onPendingCountChange?.(pendingCount);
   }, [pendingCount, onPendingCountChange]);
+
+  const handlePageSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize);
+    setPage(1);
+  };
 
   if (error) {
     return (
@@ -91,6 +105,8 @@ export function AssignmentTable({ initialData, onPendingCountChange }: Assignmen
       </div>
     );
   }
+
+  const hasFilters = searchQuery.length > 0 || statusFilter !== "all";
 
   return (
     <div className="space-y-4">
@@ -109,7 +125,7 @@ export function AssignmentTable({ initialData, onPendingCountChange }: Assignmen
           value={statusFilter}
           onValueChange={(value) => setStatusFilter(value as StatusFilter)}
         >
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-45">
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
           <SelectContent>
@@ -123,10 +139,8 @@ export function AssignmentTable({ initialData, onPendingCountChange }: Assignmen
       {/* Table */}
       {isLoading ? (
         <AssignmentTableSkeleton />
-      ) : filteredAssignments.length === 0 ? (
-        <EmptyState
-          hasFilters={searchQuery.trim().length > 0 || statusFilter !== "all"}
-        />
+      ) : assignments.length === 0 ? (
+        <EmptyState hasFilters={hasFilters} />
       ) : (
         <>
           {/* Desktop Table */}
@@ -143,7 +157,7 @@ export function AssignmentTable({ initialData, onPendingCountChange }: Assignmen
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredAssignments.map((trip) => (
+                {assignments.map((trip) => (
                   <AssignmentRow key={trip.id} trip={trip} />
                 ))}
               </TableBody>
@@ -152,16 +166,20 @@ export function AssignmentTable({ initialData, onPendingCountChange }: Assignmen
 
           {/* Mobile Cards */}
           <div className="md:hidden space-y-3">
-            {filteredAssignments.map((trip) => (
+            {assignments.map((trip) => (
               <AssignmentCard key={trip.id} trip={trip} />
             ))}
           </div>
 
-          {/* Results count */}
-          <p className="text-sm text-muted-foreground">
-            Showing {filteredAssignments.length} of {assignments?.length ?? 0}{" "}
-            assignments ({pendingCount} pending)
-          </p>
+          {/* Pagination */}
+          {pagination && (
+            <TablePagination
+              pagination={pagination}
+              onPageChange={setPage}
+              onPageSizeChange={handlePageSizeChange}
+              isLoading={isLoading}
+            />
+          )}
         </>
       )}
     </div>
@@ -206,14 +224,14 @@ function AssignmentRow({ trip }: { trip: Trip }) {
           currentDriverName={trip.assignment?.driver?.name}
         />
       </TableCell>
-      <TableCell className="max-w-[200px]">
+      <TableCell className="max-w-50">
         {hasAIReasoning ? (
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
                 <div className="flex items-center gap-1.5 text-sm text-muted-foreground cursor-help">
                   <Sparkles className="h-3.5 w-3.5 text-primary" />
-                  <span className="truncate max-w-[150px]">
+                  <span className="truncate max-w-37.5">
                     {trip.assignment?.aiReasoning}
                   </span>
                 </div>
@@ -318,7 +336,7 @@ function AssignmentTableSkeleton() {
                 <Skeleton className="h-5 w-16" />
               </TableCell>
               <TableCell>
-                <Skeleton className="h-9 w-[140px]" />
+                <Skeleton className="h-9 w-35" />
               </TableCell>
               <TableCell>
                 <Skeleton className="h-4 w-32" />

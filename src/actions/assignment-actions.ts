@@ -1,6 +1,7 @@
 "use server";
 
 import prisma from "@/lib/prisma";
+import { Prisma } from "@/lib/generated/prisma/client";
 import { revalidatePath } from "next/cache";
 import type {
   ActionResponse,
@@ -8,6 +9,8 @@ import type {
   TripAssignment,
   AssignmentStats,
   Driver,
+  AssignmentPaginationParams,
+  PaginatedResponse,
 } from "@/lib/types";
 
 // ============================================
@@ -29,6 +32,74 @@ export async function getAssignments(): Promise<ActionResponse<Trip[]>> {
     return { success: true, data: assignments as Trip[] };
   } catch (error) {
     console.error("Failed to fetch assignments:", error);
+    return { success: false, error: "Failed to fetch assignments" };
+  }
+}
+
+// ============================================
+// GET ASSIGNMENTS PAGINATED
+// ============================================
+
+export async function getAssignmentsPaginated(
+  params: AssignmentPaginationParams
+): Promise<ActionResponse<PaginatedResponse<Trip>>> {
+  try {
+    const { page, pageSize, search, status } = params;
+    const skip = (page - 1) * pageSize;
+
+    // Build where clause with server-side filtering
+    const where: Prisma.TripWhereInput = {
+      tripStage: "Upcoming",
+      ...(search && {
+        OR: [
+          { tripId: { contains: search, mode: "insensitive" } },
+          {
+            assignment: {
+              driver: { name: { contains: search, mode: "insensitive" } },
+            },
+          },
+        ],
+      }),
+      ...(status === "assigned" && {
+        assignment: { isNot: null },
+      }),
+      ...(status === "pending" && {
+        assignment: null,
+      }),
+    };
+
+    // Execute count and data queries in parallel
+    const [totalItems, assignments] = await Promise.all([
+      prisma.trip.count({ where }),
+      prisma.trip.findMany({
+        where,
+        include: {
+          assignment: { include: { driver: true } },
+        },
+        orderBy: { tripDate: "asc" },
+        skip,
+        take: pageSize,
+      }),
+    ]);
+
+    const totalPages = Math.ceil(totalItems / pageSize);
+
+    return {
+      success: true,
+      data: {
+        data: assignments as Trip[],
+        pagination: {
+          page,
+          pageSize,
+          totalItems,
+          totalPages,
+          hasNextPage: page < totalPages,
+          hasPreviousPage: page > 1,
+        },
+      },
+    };
+  } catch (error) {
+    console.error("Failed to fetch paginated assignments:", error);
     return { success: false, error: "Failed to fetch assignments" };
   }
 }

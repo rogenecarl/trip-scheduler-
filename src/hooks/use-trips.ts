@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import {
   getTrips,
   createTrip,
-  importTripsFromCSV,
+  importTripsFromCSVEnhanced,
   deleteTrip,
 } from "@/actions/trip-actions";
 import type { Trip } from "@/lib/types";
@@ -63,7 +63,7 @@ export function useCreateTrip() {
 }
 
 // ============================================
-// MUTATION: Import trips from CSV
+// MUTATION: Import trips from CSV (Enhanced)
 // ============================================
 
 export function useImportTrips() {
@@ -73,19 +73,30 @@ export function useImportTrips() {
     mutationFn: async (
       trips: { tripId: string; tripDate: Date; dayOfWeek: number }[]
     ) => {
-      const result = await importTripsFromCSV(trips);
+      const result = await importTripsFromCSVEnhanced(trips);
       if (!result.success) throw new Error(result.error);
       return result.data;
     },
     onSuccess: (data) => {
-      // Targeted invalidation
-      queryClient.invalidateQueries({ queryKey: queryKeys.trips.list() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.assignments.list() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.stats() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.pendingTrips() });
-      toast.success(
-        `Imported ${data.imported} trips${data.skipped > 0 ? `, ${data.skipped} skipped` : ""}`
-      );
+      // Invalidate all paginated queries and lists
+      queryClient.invalidateQueries({ queryKey: queryKeys.trips.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.assignments.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all });
+
+      // Enhanced feedback with duplicate details
+      if (data.duplicateTripIds.length > 0) {
+        const maxShow = 3;
+        const duplicateList = data.duplicateTripIds.slice(0, maxShow).join(", ");
+        const moreCount = data.duplicateTripIds.length - maxShow;
+        const duplicateInfo =
+          moreCount > 0 ? `${duplicateList} and ${moreCount} more` : duplicateList;
+
+        toast.success(
+          `Imported ${data.imported} trips. Skipped ${data.skipped} duplicates: ${duplicateInfo}`
+        );
+      } else {
+        toast.success(`Imported ${data.imported} trips successfully`);
+      }
     },
     onError: (error: Error) => {
       toast.error(error.message || "Failed to import trips");
