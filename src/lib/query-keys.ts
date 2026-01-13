@@ -59,14 +59,6 @@ export const queryKeys = {
     day: (date: string) => [...queryKeys.calendar.all, "day", date] as const,
   },
 
-  // Chat
-  chat: {
-    all: ["chat"] as const,
-    sessions: () => [...queryKeys.chat.all, "sessions"] as const,
-    messages: (sessionId: string) =>
-      [...queryKeys.chat.all, "messages", sessionId] as const,
-  },
-
   // Uploads
   uploads: {
     all: ["uploads"] as const,

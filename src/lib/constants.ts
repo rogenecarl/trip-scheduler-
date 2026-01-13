@@ -4,7 +4,6 @@ import {
   Users,
   ClipboardCheck,
   CalendarDays,
-  MessageCircle,
 } from "lucide-react";
 import type { NavItem } from "./types";
 
@@ -48,7 +47,6 @@ export const DASHBOARD_NAV_ITEMS: NavItem[] = [
   { label: "Drivers", href: "/dashboard/drivers", icon: Users },
   { label: "Assignments", href: "/dashboard/assignments", icon: ClipboardCheck },
   { label: "Calendar", href: "/dashboard/calendar", icon: CalendarDays },
-  { label: "AI Chat", href: "/dashboard/chat", icon: MessageCircle },
 ];
 
 export const MOBILE_NAV_ITEMS: NavItem[] = [

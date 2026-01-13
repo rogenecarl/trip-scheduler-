@@ -55,8 +55,7 @@ export const ModelName = {
   DriverAvailability: 'DriverAvailability',
   WeekUpload: 'WeekUpload',
   Trip: 'Trip',
-  TripAssignment: 'TripAssignment',
-  ChatMessage: 'ChatMessage'
+  TripAssignment: 'TripAssignment'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -131,17 +130,6 @@ export const TripAssignmentScalarFieldEnum = {
 } as const
 
 export type TripAssignmentScalarFieldEnum = (typeof TripAssignmentScalarFieldEnum)[keyof typeof TripAssignmentScalarFieldEnum]
-
-
-export const ChatMessageScalarFieldEnum = {
-  id: 'id',
-  sessionId: 'sessionId',
-  role: 'role',
-  content: 'content',
-  createdAt: 'createdAt'
-} as const
-
-export type ChatMessageScalarFieldEnum = (typeof ChatMessageScalarFieldEnum)[keyof typeof ChatMessageScalarFieldEnum]
 
 
 export const SortOrder = {

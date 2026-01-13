@@ -145,20 +145,6 @@ model TripAssignment {
 
   @@index([driverId])
 }
-
-// ============================================
-// AI CHAT HISTORY
-// ============================================
-
-model ChatMessage {
-  id          String   @id @default(cuid())
-  sessionId   String
-  role        String   // "user" or "assistant"
-  content     String   @db.Text
-  createdAt   DateTime @default(now())
-
-  @@index([sessionId])
-}
 ```
 
 ### Schema Summary
@@ -170,7 +156,6 @@ model ChatMessage {
 | **WeekUpload** | Track CSV imports | `fileName`, `status`, `totalTrips` |
 | **Trip** | Trip to assign | `tripId` (unique), `tripDate`, `dayOfWeek` |
 | **TripAssignment** | Driver ↔ Trip link | `driverId`, `tripId`, `aiReasoning` |
-| **ChatMessage** | AI chat history | `role`, `content`, `sessionId` |
 
 ### Day of Week Reference
 
@@ -529,18 +514,15 @@ src/
 │   │   └── page.tsx                  # View/add trips
 │   ├── assignments/
 │   │   └── page.tsx                  # AI assignments
-│   ├── calendar/
-│   │   └── page.tsx                  # Availability calendar
-│   └── chat/
-│       └── page.tsx                  # AI chat (optional)
+│   └── calendar/
+│       └── page.tsx                  # Availability calendar
 │
 ├── actions/
 │   ├── dashboard-actions.ts          # Dashboard stats server actions
 │   ├── driver-actions.ts             # Driver CRUD server actions
 │   ├── trip-actions.ts               # Trip CRUD server actions
 │   ├── assignment-actions.ts         # Assignment server actions
-│   ├── ai-actions.ts                 # Gemini AI server actions
-│   └── chat-actions.ts               # Chat server actions
+│   └── ai-actions.ts                 # Gemini AI server actions
 │
 ├── components/
 │   ├── ui/                           # shadcn/ui components
@@ -579,19 +561,13 @@ src/
 │   │   ├── auto-assign-button.tsx    # AI assign trigger
 │   │   └── export-dropdown.tsx       # Export options
 │   │
-│   ├── calendar/
-│   │   ├── calendar-view.tsx         # Main calendar component
-│   │   ├── calendar-header.tsx       # Month navigation
-│   │   ├── calendar-grid.tsx         # Day grid
-│   │   ├── calendar-day.tsx          # Single day cell
-│   │   ├── day-detail-sheet.tsx      # Day details sidebar
-│   │   └── driver-avatar.tsx         # Small driver indicator
-│   │
-│   └── chat/
-│       ├── chat-container.tsx        # Main chat layout
-│       ├── message-list.tsx          # Message history
-│       ├── message-bubble.tsx        # Single message
-│       └── chat-input.tsx            # Input with send button
+│   └── calendar/
+│       ├── calendar-view.tsx         # Main calendar component
+│       ├── calendar-header.tsx       # Month navigation
+│       ├── calendar-grid.tsx         # Day grid
+│       ├── calendar-day.tsx          # Single day cell
+│       ├── day-detail-sheet.tsx      # Day details sidebar
+│       └── driver-avatar.tsx         # Small driver indicator
 │
 ├── hooks/
 │   ├── use-drivers.ts                # Driver queries & mutations (TanStack Query + Server Actions)
@@ -599,7 +575,6 @@ src/
 │   ├── use-assignments.ts            # Assignment queries & mutations
 │   ├── use-dashboard.ts              # Dashboard queries
 │   ├── use-ai-assign.ts              # AI assignment mutation
-│   ├── use-chat.ts                   # Chat functionality
 │   └── use-mobile.ts                 # Mobile detection
 │
 ├── lib/
@@ -674,13 +649,6 @@ export interface WeekUpload {
   assignedTrips: number;
 }
 
-export interface ChatMessage {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-  createdAt: Date;
-}
-
 // Server Action Response Type
 export type ActionResponse<T> =
   | { success: true; data: T; error?: never }
@@ -725,7 +693,6 @@ export const DAY_NAMES_SHORT = [
 │  │ 👥 Drivers              │   │   │                     │ │
 │  │ 📋 Assignments          │   │   │                     │ │
 │  │ 📅 Calendar             │   │   │                     │ │
-│  │ 💬 Chat                 │   │   │                     │ │
 │  └─────────────────────────┘   │   └─────────────────────┘ │
 │                                 │                           │
 └─────────────────────────────────┴───────────────────────────┘
@@ -1027,59 +994,6 @@ export const DAY_NAMES_SHORT = [
 
 ---
 
-### Page 6: Chat (`/chat`) - Optional
-
-**Purpose**: AI chat assistant for questions and commands.
-
-**Layout**:
-```
-┌─────────────────────────────────────────────────────────────┐
-│  AI Assistant                                                │
-│  Ask questions about schedules and drivers                   │
-├─────────────────────────────────────────────────────────────┤
-│                                                              │
-│  ┌──────────────────────────────────────────────────────────┐│
-│  │                                                          ││
-│  │  ┌─────────────────────────────────────────────────────┐ ││
-│  │  │ 🤖 Hi! I'm your Trip Scheduler assistant.          │ ││
-│  │  │    I can help you with:                            │ ││
-│  │  │    • Check driver availability                     │ ││
-│  │  │    • View trip assignments                         │ ││
-│  │  │    • Answer scheduling questions                   │ ││
-│  │  └─────────────────────────────────────────────────────┘ ││
-│  │                                                          ││
-│  │                    ┌────────────────────────────────────┐││
-│  │                    │ Who is available on Thursday?     │││
-│  │                    └────────────────────────────────────┘││
-│  │                                                          ││
-│  │  ┌─────────────────────────────────────────────────────┐ ││
-│  │  │ 🤖 There are 5 drivers available on Thursday:      │ ││
-│  │  │                                                     │ ││
-│  │  │    1. John Smith (2 trips assigned)                │ ││
-│  │  │    2. Maria Garcia (1 trip assigned)               │ ││
-│  │  │    3. Alex Johnson (3 trips assigned)              │ ││
-│  │  │    4. Sarah Wilson (0 trips assigned)              │ ││
-│  │  │    5. Mike Brown (1 trip assigned)                 │ ││
-│  │  │                                                     │ ││
-│  │  │    Sarah Wilson has the lightest workload.         │ ││
-│  │  └─────────────────────────────────────────────────────┘ ││
-│  │                                                          ││
-│  └──────────────────────────────────────────────────────────┘│
-│                                                              │
-│  ┌──────────────────────────────────────────────────────────┐│
-│  │ Type your message...                            [Send]   ││
-│  └──────────────────────────────────────────────────────────┘│
-└─────────────────────────────────────────────────────────────┘
-```
-
-**Components**:
-- `ChatContainer`: Main layout
-- `MessageList`: Scrollable messages
-- `MessageBubble`: User/AI message
-- `ChatInput`: Input field + send button
-
----
-
 ## Implementation Phases
 
 ### Phase 0: Project Setup & Database
@@ -1108,7 +1022,6 @@ Add the following models to the existing schema:
   • WeekUpload (id, fileName, uploadedAt, status enum, totalTrips, assignedTrips)
   • Trip (id, tripId unique, tripDate, dayOfWeek, tripStage, weekUploadId optional)
   • TripAssignment (id, tripId unique, driverId, assignedAt, isAutoAssigned, aiReasoning)
-  • ChatMessage (id, sessionId, role, content, createdAt)
 
 2. Environment Variables (.env.local):
 ```env
@@ -1244,7 +1157,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   • Drivers (/drivers) - Users
   • Assignments (/assignments) - ClipboardCheck
   • Calendar (/calendar) - CalendarDays
-  • Chat (/chat) - MessageSquare
 - Active state: bg-muted rounded-lg
 - Hover state: bg-muted/50
 - Sidebar width: w-64
@@ -2840,221 +2752,7 @@ ENVIRONMENT:
 
 ---
 
-### Phase 8: Chat Page (Optional)
-
-**Prompt for Claude Code CLI**:
-
-```
-Create the AI Chat page (app/chat/page.tsx) for Trip Scheduler using Server Actions.
-
-REQUIREMENTS:
-
-1. Page Layout:
-- Full height container
-- Messages area (scrollable)
-- Input area (fixed bottom)
-
-2. Chat Container (components/chat/chat-container.tsx):
-- Flex column layout
-- ScrollArea for messages
-- Auto-scroll to bottom
-
-3. Message List (components/chat/message-list.tsx):
-- Map through messages
-- Group by date (optional)
-- Loading indicator for AI response
-
-4. Message Bubble (components/chat/message-bubble.tsx):
-- User messages: Right-aligned, primary bg
-- AI messages: Left-aligned, muted bg
-- Avatar/icon
-- Timestamp (optional)
-- Markdown support for AI responses
-
-5. Chat Input (components/chat/chat-input.tsx):
-- Textarea (auto-resize)
-- Send button
-- Enter to send (Shift+Enter for newline)
-- Disabled while loading
-
-6. AI Context:
-- Send current data context:
-  • Drivers (names, availability)
-  • Trips (IDs, dates, assignments)
-  • Stats summary
-- AI can reference actual data
-
-7. Suggested Questions:
-- Show when chat is empty:
-  • "Who is available on Thursday?"
-  • "How many trips are unassigned?"
-  • "Which driver has the most trips?"
-
-8. Chat Functionality:
-- Create hooks/use-chat.ts
-- Store messages in React state
-- Clear chat option
-- Handle errors gracefully
-
-DESIGN SPECS:
-- User message: bg-primary text-primary-foreground
-- AI message: bg-muted
-- Border radius: rounded-2xl
-- Max bubble width: max-w-[80%]
-- Input area: border-t p-4
-
-SHADCN COMPONENTS:
-- ScrollArea
-- Textarea
-- Button
-- Avatar
-
-SERVER ACTION (actions/chat-actions.ts):
-```typescript
-"use server"
-
-import prisma from "@/lib/prisma";
-import { genAI, MODEL_NAME } from "@/lib/gemini";
-
-export async function sendChatMessage(message: string) {
-  try {
-    // Get current context
-    const [drivers, trips, stats] = await Promise.all([
-      prisma.driver.findMany({
-        where: { isActive: true },
-        include: { availability: true }
-      }),
-      prisma.trip.findMany({
-        where: { tripStage: "Upcoming" },
-        include: { assignment: { include: { driver: true } } }
-      }),
-      getStats()
-    ]);
-
-    const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-
-    const prompt = `
-You are Trip Scheduler AI assistant for Peak Transport.
-
-CONTEXT:
-- Total Drivers: ${drivers.length}
-- Total Trips: ${stats.total}
-- Assigned: ${stats.assigned}
-- Pending: ${stats.pending}
-
-DRIVERS:
-${JSON.stringify(drivers.map(d => ({
-  name: d.name,
-  availableDays: d.availability
-    .filter(a => a.isAvailable)
-    .map(a => dayNames[a.dayOfWeek])
-})), null, 2)}
-
-TRIPS:
-${JSON.stringify(trips.slice(0, 20).map(t => ({
-  tripId: t.tripId,
-  date: t.tripDate.toISOString().split('T')[0],
-  day: dayNames[t.dayOfWeek],
-  driver: t.assignment?.driver?.name || "Unassigned"
-})), null, 2)}
-
-USER QUESTION: ${message}
-
-Respond helpfully and concisely. Reference actual data when possible.
-If user wants to make changes, explain what actions to take in the app.
-`;
-
-    const response = await genAI.models.generateContent({
-      model: MODEL_NAME,
-      contents: prompt,
-    });
-
-    return { success: true, response: response.text || "" };
-  } catch (error) {
-    console.error("Chat error:", error);
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : "Failed to get response"
-    };
-  }
-}
-
-async function getStats() {
-  const [total, assigned, pending] = await Promise.all([
-    prisma.trip.count({ where: { tripStage: "Upcoming" } }),
-    prisma.trip.count({ 
-      where: { tripStage: "Upcoming", assignment: { isNot: null } }
-    }),
-    prisma.trip.count({ 
-      where: { tripStage: "Upcoming", assignment: null }
-    })
-  ]);
-  return { total, assigned, pending };
-}
-```
-
-HOOK (hooks/use-chat.ts):
-```typescript
-"use client"
-
-import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
-import { sendChatMessage } from "@/actions/chat-actions";
-
-interface Message {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-  createdAt: Date;
-}
-
-export function useChat() {
-  const [messages, setMessages] = useState<Message[]>([]);
-
-  const mutation = useMutation({
-    mutationFn: sendChatMessage,
-    onMutate: (message) => {
-      // Add user message immediately
-      const userMessage: Message = {
-        id: crypto.randomUUID(),
-        role: "user",
-        content: message,
-        createdAt: new Date()
-      };
-      setMessages(prev => [...prev, userMessage]);
-    },
-    onSuccess: (data) => {
-      if (data.success && data.response) {
-        const assistantMessage: Message = {
-          id: crypto.randomUUID(),
-          role: "assistant",
-          content: data.response,
-          createdAt: new Date()
-        };
-        setMessages(prev => [...prev, assistantMessage]);
-      }
-    }
-  });
-
-  const sendMessage = (content: string) => {
-    mutation.mutate(content);
-  };
-
-  const clearChat = () => setMessages([]);
-
-  return {
-    messages,
-    sendMessage,
-    clearChat,
-    isLoading: mutation.isPending
-  };
-}
-```
-```
-
----
-
-### Phase 9: Polish & Testing
+### Phase 8: Polish & Testing
 
 **Prompt for Claude Code CLI**:
 
@@ -3115,7 +2813,6 @@ TEST CHECKLIST:
 - [ ] Change assignment → updates
 - [ ] Export CSV → downloads file
 - [ ] Calendar shows correct data
-- [ ] Chat responds correctly
 - [ ] All pages responsive
 - [ ] All forms validate
 - [ ] All toasts work
@@ -3223,7 +2920,7 @@ pnpm dlx prisma migrate status
 
 ## Success Criteria
 
-- [ ] All 6 pages implemented and functional
+- [ ] All 5 pages implemented and functional
 - [ ] Consistent UI/UX across all pages
 - [ ] Fully responsive (mobile to desktop)
 - [ ] All CRUD operations work

@@ -54,14 +54,6 @@ export interface TripAssignment {
   driver?: Driver;
 }
 
-export interface ChatMessage {
-  id: string;
-  sessionId: string;
-  role: "user" | "assistant";
-  content: string;
-  createdAt: Date;
-}
-
 // ============================================
 // SERVER ACTION RESPONSE TYPE
 // ============================================

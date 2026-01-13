@@ -42,8 +42,3 @@ export type Trip = Prisma.TripModel
  * 
  */
 export type TripAssignment = Prisma.TripAssignmentModel
-/**
- * Model ChatMessage
- * 
- */
-export type ChatMessage = Prisma.ChatMessageModel
