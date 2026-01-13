@@ -203,3 +203,28 @@ export interface TripPaginationParams extends PaginationParams {
 export interface AssignmentPaginationParams extends PaginationParams {
   status?: "all" | "pending" | "assigned";
 }
+
+// ============================================
+// CALENDAR TYPES
+// ============================================
+
+export interface CalendarDayData {
+  date: Date;
+  availableDrivers: {
+    id: string;
+    name: string;
+  }[];
+  trips: {
+    id: string;
+    tripId: string;
+    tripDate: Date;
+    driverName: string | null;
+    isAssigned: boolean;
+  }[];
+}
+
+export interface CalendarMonthData {
+  year: number;
+  month: number;
+  days: CalendarDayData[];
+}
