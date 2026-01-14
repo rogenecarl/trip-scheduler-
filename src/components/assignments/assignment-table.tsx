@@ -47,7 +47,7 @@ import type { Trip } from "@/lib/types";
 import { ClipboardCheck, Search, Sparkles, Trash2, X } from "lucide-react";
 
 type StatusFilter = "all" | "pending" | "assigned";
-const DEFAULT_PAGE_SIZE = 20;
+const DEFAULT_PAGE_SIZE = 40;
 
 interface AssignmentTableProps {
   onPendingCountChange?: (count: number) => void;

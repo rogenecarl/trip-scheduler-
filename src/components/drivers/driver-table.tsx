@@ -32,7 +32,7 @@ import { useDeleteDrivers } from "@/hooks/use-drivers";
 import type { Driver } from "@/lib/types";
 import { Pencil, Search, Trash2, Users, UserPlus, X } from "lucide-react";
 
-const DEFAULT_PAGE_SIZE = 20;
+const DEFAULT_PAGE_SIZE = 40;
 
 export function DriverTable() {
   // Pagination state

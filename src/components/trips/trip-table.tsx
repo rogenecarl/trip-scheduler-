@@ -41,7 +41,7 @@ import type { Trip } from "@/lib/types";
 import { Package, Search, Trash2, X } from "lucide-react";
 
 type StatusFilter = "all" | "pending" | "assigned";
-const DEFAULT_PAGE_SIZE = 20;
+const DEFAULT_PAGE_SIZE = 40;
 
 export function TripTable() {
   // Pagination and filter state
