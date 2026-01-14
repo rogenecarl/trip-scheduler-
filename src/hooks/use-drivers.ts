@@ -12,6 +12,7 @@ import {
   createDriver,
   updateDriver,
   deleteDriver,
+  deleteDrivers,
 } from "@/actions/driver-actions";
 import type { Driver } from "@/lib/types";
 
@@ -49,9 +50,9 @@ export function useCreateDriver() {
       return result.data;
     },
     onSuccess: () => {
-      // Targeted invalidation
-      queryClient.invalidateQueries({ queryKey: queryKeys.drivers.list() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.stats() });
+      // Invalidate all driver queries (list, paginated, detail) and dashboard
+      queryClient.invalidateQueries({ queryKey: queryKeys.drivers.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all });
       toast.success("Driver created successfully");
     },
     onError: (error: Error) => {
@@ -83,9 +84,9 @@ export function useUpdateDriver() {
       return result.data;
     },
     onSuccess: () => {
-      // Targeted invalidation
-      queryClient.invalidateQueries({ queryKey: queryKeys.drivers.list() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.assignments.list() });
+      // Invalidate all driver and assignment queries
+      queryClient.invalidateQueries({ queryKey: queryKeys.drivers.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.assignments.all });
       toast.success("Driver updated successfully");
     },
     onError: (error: Error) => {
@@ -108,13 +109,42 @@ export function useDeleteDriver() {
       return result.data;
     },
     onSuccess: () => {
-      // Targeted invalidation
-      queryClient.invalidateQueries({ queryKey: queryKeys.drivers.list() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.stats() });
+      // Invalidate all driver, assignment, and dashboard queries
+      queryClient.invalidateQueries({ queryKey: queryKeys.drivers.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.assignments.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all });
       toast.success("Driver deleted successfully");
     },
     onError: (error: Error) => {
       toast.error(error.message || "Failed to delete driver");
+    },
+  });
+}
+
+// ============================================
+// MUTATION: Bulk delete drivers
+// ============================================
+
+export function useDeleteDrivers() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (ids: string[]) => {
+      const result = await deleteDrivers(ids);
+      if (!result.success) throw new Error(result.error);
+      return result.data;
+    },
+    onSuccess: (data) => {
+      // Invalidate all related queries
+      queryClient.invalidateQueries({ queryKey: queryKeys.drivers.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.assignments.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all });
+      toast.success(
+        `${data.count} ${data.count === 1 ? "driver" : "drivers"} deleted successfully`
+      );
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to delete drivers");
     },
   });
 }

@@ -12,6 +12,7 @@ import {
   createTrip,
   importTripsFromCSVEnhanced,
   deleteTrip,
+  deleteTrips,
 } from "@/actions/trip-actions";
 import type { Trip } from "@/lib/types";
 
@@ -49,11 +50,10 @@ export function useCreateTrip() {
       return result.data;
     },
     onSuccess: () => {
-      // Targeted invalidation
-      queryClient.invalidateQueries({ queryKey: queryKeys.trips.list() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.assignments.list() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.stats() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.pendingTrips() });
+      // Invalidate all trip, assignment, and dashboard queries
+      queryClient.invalidateQueries({ queryKey: queryKeys.trips.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.assignments.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all });
       toast.success("Trip created successfully");
     },
     onError: (error: Error) => {
@@ -118,15 +118,42 @@ export function useDeleteTrip() {
       return result.data;
     },
     onSuccess: () => {
-      // Targeted invalidation
-      queryClient.invalidateQueries({ queryKey: queryKeys.trips.list() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.assignments.list() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.stats() });
-      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.pendingTrips() });
+      // Invalidate all trip, assignment, and dashboard queries
+      queryClient.invalidateQueries({ queryKey: queryKeys.trips.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.assignments.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all });
       toast.success("Trip deleted successfully");
     },
     onError: (error: Error) => {
       toast.error(error.message || "Failed to delete trip");
+    },
+  });
+}
+
+// ============================================
+// MUTATION: Bulk delete trips
+// ============================================
+
+export function useDeleteTrips() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (ids: string[]) => {
+      const result = await deleteTrips(ids);
+      if (!result.success) throw new Error(result.error);
+      return result.data;
+    },
+    onSuccess: (data) => {
+      // Invalidate all related queries
+      queryClient.invalidateQueries({ queryKey: queryKeys.trips.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.assignments.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all });
+      toast.success(
+        `${data.count} ${data.count === 1 ? "trip" : "trips"} deleted successfully`
+      );
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to delete trips");
     },
   });
 }

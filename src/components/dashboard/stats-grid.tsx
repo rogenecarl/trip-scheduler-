@@ -18,8 +18,8 @@ export function StatsGrid({ stats, isLoading }: StatsGridProps) {
       iconClassName: "bg-blue-100 text-blue-600",
     },
     {
-      label: "Trips This Week",
-      value: stats?.tripsThisWeek ?? 0,
+      label: "Total Trips",
+      value: stats?.totalTrips ?? 0,
       icon: Package,
       iconClassName: "bg-green-100 text-green-600",
     },
@@ -30,7 +30,7 @@ export function StatsGrid({ stats, isLoading }: StatsGridProps) {
       iconClassName: "bg-emerald-100 text-emerald-600",
     },
     {
-      label: "Pending this week",
+      label: "Pending",
       value: stats?.pendingTrips ?? 0,
       icon: Clock,
       iconClassName: "bg-amber-100 text-amber-600",

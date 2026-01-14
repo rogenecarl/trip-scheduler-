@@ -27,7 +27,8 @@ export function DeleteDriverDialog({
 }: DeleteDriverDialogProps) {
   const deleteDriver = useDeleteDriver();
 
-  const handleDelete = async () => {
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.preventDefault();
     if (!driver) return;
     await deleteDriver.mutateAsync(driver.id);
     onOpenChange(false);

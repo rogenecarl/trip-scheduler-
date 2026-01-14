@@ -110,7 +110,7 @@ export interface Feature {
 
 export interface DashboardStats {
   totalDrivers: number;
-  tripsThisWeek: number;
+  totalTrips: number;
   assignedTrips: number;
   pendingTrips: number;
 }
@@ -126,21 +126,40 @@ export interface AssignmentStats {
 }
 
 // ============================================
-// AI TYPES
+// ASSIGNMENT TYPES (Fast Algorithm)
 // ============================================
 
+/** Assignment result from the fast algorithm */
 export interface AIAssignment {
   tripId: string;
   driverId: string;
   reasoning: string;
 }
 
+/** Driver workload distribution */
+export interface DriverDistribution {
+  driverId: string;
+  driverName: string;
+  tripCount: number;
+}
+
+/** Assignment statistics */
+export interface AssignmentResultStats {
+  totalTrips: number;
+  assignedCount: number;
+  unassignedCount: number;
+}
+
+/** Result from autoAssignDrivers() */
 export interface AIAssignmentResult {
   success: boolean;
   assignments?: AIAssignment[];
   summary?: string;
   warnings?: string[];
   error?: string;
+  distribution?: DriverDistribution[];
+  stats?: AssignmentResultStats;
+  durationMs?: number;
 }
 
 // ============================================

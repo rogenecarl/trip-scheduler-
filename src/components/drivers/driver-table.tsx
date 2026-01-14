@@ -12,13 +12,25 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { TablePagination } from "@/components/ui/table-pagination";
 import { AvailabilityDisplay } from "./availability-picker";
 import { DriverDialog } from "./driver-dialog";
 import { DeleteDriverDialog } from "./delete-driver-dialog";
 import { usePaginatedDrivers } from "@/hooks/use-paginated-drivers";
+import { useDeleteDrivers } from "@/hooks/use-drivers";
 import type { Driver } from "@/lib/types";
-import { Pencil, Search, Trash2, Users, UserPlus } from "lucide-react";
+import { Pencil, Search, Trash2, Users, UserPlus, X } from "lucide-react";
 
 const DEFAULT_PAGE_SIZE = 20;
 
@@ -39,6 +51,13 @@ export function DriverTable() {
   const [deletingDriver, setDeletingDriver] = useState<Driver | null>(null);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
+  // Selection state
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
+
+  // Bulk delete mutation
+  const deleteDrivers = useDeleteDrivers();
+
   const pagination = data?.pagination;
 
   // Client-side filtering for instant search
@@ -51,10 +70,49 @@ export function DriverTable() {
     );
   }, [data?.data, searchQuery]);
 
+  // Selection helpers
+  const allSelected = drivers.length > 0 && drivers.every((d) => selectedIds.has(d.id));
+  const someSelected = drivers.some((d) => selectedIds.has(d.id));
+  const selectedCount = selectedIds.size;
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedIds(new Set(drivers.map((d) => d.id)));
+    } else {
+      setSelectedIds(new Set());
+    }
+  };
+
+  const handleSelectOne = (id: string, checked: boolean) => {
+    const newSelected = new Set(selectedIds);
+    if (checked) {
+      newSelected.add(id);
+    } else {
+      newSelected.delete(id);
+    }
+    setSelectedIds(newSelected);
+  };
+
+  const handleBulkDelete = async () => {
+    await deleteDrivers.mutateAsync(Array.from(selectedIds));
+    setSelectedIds(new Set());
+    setShowBulkDeleteDialog(false);
+  };
+
+  const clearSelection = () => {
+    setSelectedIds(new Set());
+  };
+
   // Handle page size change - reset to page 1
   const handlePageSizeChange = (newPageSize: number) => {
     setPageSize(newPageSize);
     setPage(1);
+    setSelectedIds(new Set()); // Clear selection on page change
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+    setSelectedIds(new Set()); // Clear selection on page change
   };
 
   if (error) {
@@ -73,6 +131,34 @@ export function DriverTable() {
 
   return (
     <div className="space-y-4">
+      {/* Selection Toolbar */}
+      {selectedCount > 0 && (
+        <div className="flex items-center justify-between rounded-lg border bg-muted/50 px-4 py-2">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">
+              {selectedCount} {selectedCount === 1 ? "driver" : "drivers"} selected
+            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearSelection}
+              className="h-7 px-2"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => setShowBulkDeleteDialog(true)}
+            disabled={deleteDrivers.isPending}
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            Delete Selected
+          </Button>
+        </div>
+      )}
+
       {/* Search and Add Button */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative flex-1 max-w-sm">
@@ -105,6 +191,14 @@ export function DriverTable() {
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/50">
+                  <TableHead className="w-[50px]">
+                    <Checkbox
+                      checked={allSelected}
+                      onCheckedChange={handleSelectAll}
+                      aria-label="Select all drivers"
+                      className={someSelected && !allSelected ? "opacity-50" : ""}
+                    />
+                  </TableHead>
                   <TableHead className="font-medium">Name</TableHead>
                   <TableHead className="font-medium">Availability</TableHead>
                   <TableHead className="font-medium w-25">Actions</TableHead>
@@ -112,7 +206,19 @@ export function DriverTable() {
               </TableHeader>
               <TableBody>
                 {drivers.map((driver) => (
-                  <TableRow key={driver.id} className="hover:bg-muted/50">
+                  <TableRow
+                    key={driver.id}
+                    className={`hover:bg-muted/50 ${selectedIds.has(driver.id) ? "bg-muted/30" : ""}`}
+                  >
+                    <TableCell>
+                      <Checkbox
+                        checked={selectedIds.has(driver.id)}
+                        onCheckedChange={(checked) =>
+                          handleSelectOne(driver.id, checked as boolean)
+                        }
+                        aria-label={`Select ${driver.name}`}
+                      />
+                    </TableCell>
                     <TableCell className="font-medium">{driver.name}</TableCell>
                     <TableCell>
                       <AvailabilityDisplay
@@ -152,10 +258,19 @@ export function DriverTable() {
             {drivers.map((driver) => (
               <div
                 key={driver.id}
-                className="rounded-lg border p-4 space-y-3"
+                className={`rounded-lg border p-4 space-y-3 ${selectedIds.has(driver.id) ? "bg-muted/30 border-primary/50" : ""}`}
               >
                 <div className="flex items-center justify-between">
-                  <h3 className="font-medium">{driver.name}</h3>
+                  <div className="flex items-center gap-3">
+                    <Checkbox
+                      checked={selectedIds.has(driver.id)}
+                      onCheckedChange={(checked) =>
+                        handleSelectOne(driver.id, checked as boolean)
+                      }
+                      aria-label={`Select ${driver.name}`}
+                    />
+                    <h3 className="font-medium">{driver.name}</h3>
+                  </div>
                   <div className="flex items-center gap-1">
                     <Button
                       variant="ghost"
@@ -176,7 +291,7 @@ export function DriverTable() {
                     </Button>
                   </div>
                 </div>
-                <div>
+                <div className="pl-7">
                   <p className="text-xs text-muted-foreground mb-2">
                     Availability
                   </p>
@@ -193,7 +308,7 @@ export function DriverTable() {
           {pagination && (
             <TablePagination
               pagination={pagination}
-              onPageChange={setPage}
+              onPageChange={handlePageChange}
               onPageSizeChange={handlePageSizeChange}
               isLoading={isLoading}
             />
@@ -219,6 +334,31 @@ export function DriverTable() {
         onOpenChange={(open) => !open && setDeletingDriver(null)}
         driver={deletingDriver}
       />
+
+      {/* Bulk Delete Confirmation Dialog */}
+      <AlertDialog open={showBulkDeleteDialog} onOpenChange={setShowBulkDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {selectedCount} drivers?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will deactivate the selected drivers. They will no longer
+              appear in the driver list or be available for assignments.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteDrivers.isPending}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleBulkDelete}
+              disabled={deleteDrivers.isPending}
+              className="bg-destructive text-white hover:bg-destructive/90"
+            >
+              {deleteDrivers.isPending ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
@@ -229,6 +369,9 @@ function DriverTableSkeleton() {
       <Table>
         <TableHeader>
           <TableRow className="bg-muted/50">
+            <TableHead className="w-[50px]">
+              <Skeleton className="h-4 w-4" />
+            </TableHead>
             <TableHead className="font-medium">Name</TableHead>
             <TableHead className="font-medium">Availability</TableHead>
             <TableHead className="font-medium w-25">Actions</TableHead>
@@ -237,6 +380,9 @@ function DriverTableSkeleton() {
         <TableBody>
           {[...Array(5)].map((_, i) => (
             <TableRow key={i}>
+              <TableCell>
+                <Skeleton className="h-4 w-4" />
+              </TableCell>
               <TableCell>
                 <Skeleton className="h-4 w-32" />
               </TableCell>

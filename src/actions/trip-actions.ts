@@ -324,6 +324,33 @@ export async function deleteTrip(
 }
 
 // ============================================
+// BULK DELETE TRIPS
+// ============================================
+
+export async function deleteTrips(
+  ids: string[]
+): Promise<ActionResponse<{ count: number }>> {
+  try {
+    if (ids.length === 0) {
+      return { success: false, error: "No trips selected" };
+    }
+
+    const result = await prisma.trip.deleteMany({
+      where: { id: { in: ids } },
+    });
+
+    revalidatePath("/dashboard/trips");
+    revalidatePath("/dashboard");
+    revalidatePath("/dashboard/assignments");
+
+    return { success: true, data: { count: result.count } };
+  } catch (error) {
+    console.error("Failed to delete trips:", error);
+    return { success: false, error: "Failed to delete trips" };
+  }
+}
+
+// ============================================
 // GET TRIPS BY DATE RANGE
 // ============================================
 

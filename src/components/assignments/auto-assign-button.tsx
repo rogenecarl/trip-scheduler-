@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Sparkles } from "lucide-react";
-import { AIProcessingModal } from "./ai-processing-modal";
-import { useAIAssign } from "@/hooks/use-assignments";
+import { Zap } from "lucide-react";
+import { AssignmentResultModal } from "./ai-processing-modal";
+import { useAutoAssignWithResult } from "@/hooks/use-assignments";
 import type { AIAssignmentResult } from "@/lib/types";
 
 interface AutoAssignButtonProps {
@@ -14,36 +14,38 @@ interface AutoAssignButtonProps {
 export function AutoAssignButton({ pendingCount }: AutoAssignButtonProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [result, setResult] = useState<AIAssignmentResult | null>(null);
-  const aiAssign = useAIAssign();
+  const { startAssignment, isProcessing, reset } = useAutoAssignWithResult();
 
   const handleAutoAssign = async () => {
     setResult(null);
+    reset();
     setIsModalOpen(true);
 
-    const assignmentResult = await aiAssign.mutateAsync();
+    const assignmentResult = await startAssignment();
     setResult(assignmentResult);
   };
 
   const handleModalClose = () => {
     setIsModalOpen(false);
     setResult(null);
+    reset();
   };
 
   return (
     <>
       <Button
         onClick={handleAutoAssign}
-        disabled={pendingCount === 0 || aiAssign.isPending}
+        disabled={pendingCount === 0 || isProcessing}
         className="gap-2"
       >
-        <Sparkles className="h-4 w-4" />
-        Auto-Assign with AI
+        <Zap className="h-4 w-4" />
+        Auto-Assign
       </Button>
 
-      <AIProcessingModal
+      <AssignmentResultModal
         open={isModalOpen}
         onClose={handleModalClose}
-        isProcessing={aiAssign.isPending}
+        isProcessing={isProcessing}
         result={result}
         pendingCount={pendingCount}
       />

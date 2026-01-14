@@ -3,6 +3,7 @@
 import prisma from "@/lib/prisma";
 import { Prisma } from "@/lib/generated/prisma/client";
 import { revalidatePath } from "next/cache";
+import { invalidateDriverCache } from "@/lib/cache"; // ← Add this import
 import { z } from "zod";
 import type {
   ActionResponse,
@@ -50,7 +51,6 @@ export async function getDriversPaginated(
     const { page, pageSize, search } = params;
     const skip = (page - 1) * pageSize;
 
-    // Build where clause for server-side filtering
     const where: Prisma.DriverWhereInput = {
       isActive: true,
       ...(search && {
@@ -58,7 +58,6 @@ export async function getDriversPaginated(
       }),
     };
 
-    // Execute count and data queries in parallel
     const [totalItems, drivers] = await Promise.all([
       prisma.driver.count({ where }),
       prisma.driver.findMany({
@@ -143,6 +142,9 @@ export async function createDriver(
       include: { availability: true },
     });
 
+    // ⚡ Invalidate cache so new driver is included in assignments
+    await invalidateDriverCache();
+
     revalidatePath("/dashboard/drivers");
     revalidatePath("/dashboard");
 
@@ -170,12 +172,9 @@ export async function updateDriver(
       return { success: false, error: validated.error.issues[0].message };
     }
 
-    // Use transaction for atomicity (delete + update in single operation)
     const driver = await prisma.$transaction(async (tx) => {
-      // Delete existing availability
       await tx.driverAvailability.deleteMany({ where: { driverId: id } });
 
-      // Update driver with new availability
       return tx.driver.update({
         where: { id },
         data: {
@@ -191,6 +190,9 @@ export async function updateDriver(
       });
     });
 
+    // ⚡ Invalidate cache so updated availability is reflected
+    await invalidateDriverCache();
+
     revalidatePath("/dashboard/drivers");
     revalidatePath("/dashboard/assignments");
 
@@ -202,25 +204,64 @@ export async function updateDriver(
 }
 
 // ============================================
-// DELETE DRIVER (Soft Delete)
+// DELETE DRIVER (Hard Delete)
 // ============================================
 
 export async function deleteDriver(
   id: string
 ): Promise<ActionResponse<{ id: string }>> {
   try {
-    await prisma.driver.update({
-      where: { id },
-      data: { isActive: false },
+    await prisma.$transaction(async (tx) => {
+      // Delete assignments first (no cascade on driver relation)
+      await tx.tripAssignment.deleteMany({ where: { driverId: id } });
+      // Delete driver (DriverAvailability cascades automatically)
+      await tx.driver.delete({ where: { id } });
     });
+
+    // ⚡ Invalidate cache so deleted driver is excluded
+    await invalidateDriverCache();
 
     revalidatePath("/dashboard/drivers");
     revalidatePath("/dashboard");
+    revalidatePath("/dashboard/assignments");
 
     return { success: true, data: { id } };
   } catch (error) {
     console.error("Failed to delete driver:", error);
     return { success: false, error: "Failed to delete driver" };
+  }
+}
+
+// ============================================
+// BULK DELETE DRIVERS (Hard Delete)
+// ============================================
+
+export async function deleteDrivers(
+  ids: string[]
+): Promise<ActionResponse<{ count: number }>> {
+  try {
+    if (ids.length === 0) {
+      return { success: false, error: "No drivers selected" };
+    }
+
+    const result = await prisma.$transaction(async (tx) => {
+      // Delete assignments first (no cascade on driver relation)
+      await tx.tripAssignment.deleteMany({ where: { driverId: { in: ids } } });
+      // Delete drivers (DriverAvailability cascades automatically)
+      return tx.driver.deleteMany({ where: { id: { in: ids } } });
+    });
+
+    // ⚡ Invalidate cache so deleted drivers are excluded
+    await invalidateDriverCache();
+
+    revalidatePath("/dashboard/drivers");
+    revalidatePath("/dashboard");
+    revalidatePath("/dashboard/assignments");
+
+    return { success: true, data: { count: result.count } };
+  } catch (error) {
+    console.error("Failed to delete drivers:", error);
+    return { success: false, error: "Failed to delete drivers" };
   }
 }
 

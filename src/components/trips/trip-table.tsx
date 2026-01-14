@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -21,12 +22,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { TablePagination } from "@/components/ui/table-pagination";
 import { DeleteTripDialog } from "./delete-trip-dialog";
 import { usePaginatedTrips } from "@/hooks/use-paginated-trips";
+import { useDeleteTrips } from "@/hooks/use-trips";
 import { DAY_NAMES_SHORT } from "@/lib/types";
 import type { Trip } from "@/lib/types";
-import { Package, Search, Trash2 } from "lucide-react";
+import { Package, Search, Trash2, X } from "lucide-react";
 
 type StatusFilter = "all" | "pending" | "assigned";
 const DEFAULT_PAGE_SIZE = 20;
@@ -38,6 +50,13 @@ export function TripTable() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [deletingTrip, setDeletingTrip] = useState<Trip | null>(null);
+
+  // Selection state
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
+
+  // Bulk delete mutation
+  const deleteTrips = useDeleteTrips();
 
   // Fetch paginated data (no server-side filtering)
   const { data, isLoading, error } = usePaginatedTrips({
@@ -69,9 +88,48 @@ export function TripTable() {
     return filtered;
   }, [data?.data, searchQuery, statusFilter]);
 
+  // Selection helpers
+  const allSelected = trips.length > 0 && trips.every((t) => selectedIds.has(t.id));
+  const someSelected = trips.some((t) => selectedIds.has(t.id));
+  const selectedCount = selectedIds.size;
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedIds(new Set(trips.map((t) => t.id)));
+    } else {
+      setSelectedIds(new Set());
+    }
+  };
+
+  const handleSelectOne = (id: string, checked: boolean) => {
+    const newSelected = new Set(selectedIds);
+    if (checked) {
+      newSelected.add(id);
+    } else {
+      newSelected.delete(id);
+    }
+    setSelectedIds(newSelected);
+  };
+
+  const handleBulkDelete = async () => {
+    await deleteTrips.mutateAsync(Array.from(selectedIds));
+    setSelectedIds(new Set());
+    setShowBulkDeleteDialog(false);
+  };
+
+  const clearSelection = () => {
+    setSelectedIds(new Set());
+  };
+
   const handlePageSizeChange = (newPageSize: number) => {
     setPageSize(newPageSize);
     setPage(1);
+    setSelectedIds(new Set()); // Clear selection on page change
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+    setSelectedIds(new Set()); // Clear selection on page change
   };
 
   if (error) {
@@ -92,6 +150,34 @@ export function TripTable() {
 
   return (
     <div className="space-y-4">
+      {/* Selection Toolbar */}
+      {selectedCount > 0 && (
+        <div className="flex items-center justify-between rounded-lg border bg-muted/50 px-4 py-2">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">
+              {selectedCount} {selectedCount === 1 ? "trip" : "trips"} selected
+            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearSelection}
+              className="h-7 px-2"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => setShowBulkDeleteDialog(true)}
+            disabled={deleteTrips.isPending}
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            Delete Selected
+          </Button>
+        </div>
+      )}
+
       {/* Search and Filter Bar */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative flex-1 max-w-sm">
@@ -130,6 +216,14 @@ export function TripTable() {
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/50">
+                  <TableHead className="w-[50px]">
+                    <Checkbox
+                      checked={allSelected}
+                      onCheckedChange={handleSelectAll}
+                      aria-label="Select all trips"
+                      className={someSelected && !allSelected ? "opacity-50" : ""}
+                    />
+                  </TableHead>
                   <TableHead className="font-medium">Trip ID</TableHead>
                   <TableHead className="font-medium">Date</TableHead>
                   <TableHead className="font-medium">Day</TableHead>
@@ -140,7 +234,19 @@ export function TripTable() {
               </TableHeader>
               <TableBody>
                 {trips.map((trip) => (
-                  <TableRow key={trip.id} className="hover:bg-muted/50">
+                  <TableRow
+                    key={trip.id}
+                    className={`hover:bg-muted/50 ${selectedIds.has(trip.id) ? "bg-muted/30" : ""}`}
+                  >
+                    <TableCell>
+                      <Checkbox
+                        checked={selectedIds.has(trip.id)}
+                        onCheckedChange={(checked) =>
+                          handleSelectOne(trip.id, checked as boolean)
+                        }
+                        aria-label={`Select trip ${trip.tripId}`}
+                      />
+                    </TableCell>
                     <TableCell className="font-mono text-sm">
                       {trip.tripId}
                     </TableCell>
@@ -194,15 +300,28 @@ export function TripTable() {
           {/* Mobile Cards */}
           <div className="md:hidden space-y-3">
             {trips.map((trip) => (
-              <div key={trip.id} className="rounded-lg border p-4 space-y-3">
+              <div
+                key={trip.id}
+                className={`rounded-lg border p-4 space-y-3 ${selectedIds.has(trip.id) ? "bg-muted/30 border-primary/50" : ""}`}
+              >
                 <div className="flex items-start justify-between">
-                  <div>
-                    <p className="font-mono text-sm font-medium">
-                      {trip.tripId}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {format(new Date(trip.tripDate), "MMM d, yyyy")} ({DAY_NAMES_SHORT[trip.dayOfWeek]})
-                    </p>
+                  <div className="flex items-start gap-3">
+                    <Checkbox
+                      checked={selectedIds.has(trip.id)}
+                      onCheckedChange={(checked) =>
+                        handleSelectOne(trip.id, checked as boolean)
+                      }
+                      aria-label={`Select trip ${trip.tripId}`}
+                      className="mt-1"
+                    />
+                    <div>
+                      <p className="font-mono text-sm font-medium">
+                        {trip.tripId}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {format(new Date(trip.tripDate), "MMM d, yyyy")} ({DAY_NAMES_SHORT[trip.dayOfWeek]})
+                      </p>
+                    </div>
                   </div>
                   <Button
                     variant="ghost"
@@ -214,7 +333,7 @@ export function TripTable() {
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between pl-7">
                   <div>
                     {trip.assignment ? (
                       <Badge
@@ -246,7 +365,7 @@ export function TripTable() {
           {pagination && (
             <TablePagination
               pagination={pagination}
-              onPageChange={setPage}
+              onPageChange={handlePageChange}
               onPageSizeChange={handlePageSizeChange}
               isLoading={isLoading}
             />
@@ -254,12 +373,37 @@ export function TripTable() {
         </>
       )}
 
-      {/* Delete Dialog */}
+      {/* Delete Single Trip Dialog */}
       <DeleteTripDialog
         open={!!deletingTrip}
         onOpenChange={(open) => !open && setDeletingTrip(null)}
         trip={deletingTrip}
       />
+
+      {/* Bulk Delete Confirmation Dialog */}
+      <AlertDialog open={showBulkDeleteDialog} onOpenChange={setShowBulkDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {selectedCount} trips?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the
+              selected trips and remove their assignments.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteTrips.isPending}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleBulkDelete}
+              disabled={deleteTrips.isPending}
+              className="bg-destructive text-white hover:bg-destructive/90"
+            >
+              {deleteTrips.isPending ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
@@ -270,6 +414,9 @@ function TripTableSkeleton() {
       <Table>
         <TableHeader>
           <TableRow className="bg-muted/50">
+            <TableHead className="w-[50px]">
+              <Skeleton className="h-4 w-4" />
+            </TableHead>
             <TableHead className="font-medium">Trip ID</TableHead>
             <TableHead className="font-medium">Date</TableHead>
             <TableHead className="font-medium">Day</TableHead>
@@ -281,6 +428,9 @@ function TripTableSkeleton() {
         <TableBody>
           {[...Array(5)].map((_, i) => (
             <TableRow key={i}>
+              <TableCell>
+                <Skeleton className="h-4 w-4" />
+              </TableCell>
               <TableCell>
                 <Skeleton className="h-4 w-28" />
               </TableCell>
