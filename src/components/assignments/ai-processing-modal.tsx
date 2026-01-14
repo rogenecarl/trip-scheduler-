@@ -60,12 +60,12 @@ export function AssignmentResultModal({
                   </Badge>
                 )}
               </>
-            ) : (
+            ) : result && !result.success ? (
               <>
                 <XCircle className="h-4 w-4 shrink-0 text-destructive sm:h-5 sm:w-5" />
                 <span>Assignment Failed</span>
               </>
-            )}
+            ) : null}
           </DialogTitle>
         </DialogHeader>
 
@@ -74,9 +74,9 @@ export function AssignmentResultModal({
             <ProcessingState pendingCount={pendingCount} />
           ) : result?.success ? (
             <SuccessState result={result} />
-          ) : (
+          ) : result && !result.success ? (
             <ErrorState error={result?.error} />
-          )}
+          ) : null}
         </div>
 
         <DialogFooter className="mt-2 sm:mt-0">
