@@ -149,7 +149,6 @@ export default function HeroSection() {
             {[
               "Assign 100+ trips in seconds",
               "Zero scheduling conflicts",
-              "Works with any fleet size",
             ].map((text, index) => (
               <motion.div
                 key={text}
