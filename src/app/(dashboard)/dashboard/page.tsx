@@ -22,12 +22,13 @@ export default function DashboardPage() {
   return (
     <>
       <DashboardHeader title="Dashboard" />
-      <div className="flex flex-1 flex-col gap-8 p-4 md:p-6 lg:p-8">
+      <div className="flex flex-1 flex-col gap-6 sm:gap-8 p-4 md:p-6 lg:p-8">
+        {/* Header */}
         <div>
-          <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold tracking-tight">
             Dashboard
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-sm sm:text-base text-muted-foreground">
             Overview of your trip scheduling system
           </p>
         </div>
@@ -37,7 +38,8 @@ export default function DashboardPage() {
           <StatsGridAsync />
         </Suspense>
 
-        <div className="grid gap-6 md:grid-cols-2">
+        {/* Quick Actions & Pending Trips - Stack on mobile, side by side on larger screens */}
+        <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
           {/* QuickActions is static, no data fetching */}
           <QuickActions />
 

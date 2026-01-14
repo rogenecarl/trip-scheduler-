@@ -28,13 +28,13 @@ export function StatsCard({
 }: StatsCardProps) {
   if (isLoading) {
     return (
-      <Card className="border-l-4 border-l-cyan-700">
-        <CardContent className="p-6">
-          <div className="flex items-center gap-4">
-            <Skeleton className="h-12 w-12 rounded-full" />
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-8 w-16" />
+      <Card className="overflow-hidden">
+        <CardContent className="p-4 sm:p-6">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <Skeleton className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl" />
+            <div className="space-y-1.5">
+              <Skeleton className="h-3 sm:h-4 w-20" />
+              <Skeleton className="h-6 sm:h-8 w-12" />
             </div>
           </div>
         </CardContent>
@@ -43,24 +43,31 @@ export function StatsCard({
   }
 
   return (
-    <Card className="border-l-4 border-l-cyan-700">
-      <CardContent>
-        <div className="flex items-center gap-4">
+    <Card className="overflow-hidden border-l-4 border-l-cyan-700 hover:shadow-md transition-shadow duration-200">
+      <CardContent className="p-4 sm:p-4">
+        <div className="flex items-center gap-3 sm:gap-4">
+          {/* Icon */}
           <div
             className={cn(
-              "flex h-12 w-12 items-center justify-center rounded-full bg-muted",
+              "flex h-10 w-10 sm:h-12 sm:w-12 shrink-0 items-center justify-center rounded-xl bg-muted transition-transform duration-200 group-hover:scale-105",
               iconClassName
             )}
           >
-            <Icon className="h-6 w-6" />
+            <Icon className="h-5 w-5 sm:h-6 sm:w-6" />
           </div>
-          <div>
-            <p className="text-sm text-muted-foreground">{label}</p>
-            <p className="text-2xl font-semibold">{value}</p>
+
+          {/* Content */}
+          <div className="min-w-0 flex-1">
+            <p className="text-xs sm:text-sm text-muted-foreground font-medium truncate">
+              {label}
+            </p>
+            <p className="text-xl sm:text-2xl font-bold tracking-tight">
+              {value.toLocaleString()}
+            </p>
             {trend && (
               <p
                 className={cn(
-                  "text-xs",
+                  "text-xs mt-0.5",
                   trend.isPositive ? "text-green-600" : "text-muted-foreground"
                 )}
               >
