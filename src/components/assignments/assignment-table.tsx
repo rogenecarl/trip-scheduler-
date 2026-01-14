@@ -12,6 +12,8 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
@@ -21,6 +23,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
@@ -29,9 +41,10 @@ import {
 import { TablePagination } from "@/components/ui/table-pagination";
 import { DriverSelect } from "./driver-select";
 import { usePaginatedAssignments } from "@/hooks/use-paginated-assignments";
+import { useBulkUnassign } from "@/hooks/use-assignments";
 import { DAY_NAMES_SHORT } from "@/lib/types";
 import type { Trip } from "@/lib/types";
-import { ClipboardCheck, Search, Sparkles } from "lucide-react";
+import { ClipboardCheck, Search, Sparkles, Trash2, X } from "lucide-react";
 
 type StatusFilter = "all" | "pending" | "assigned";
 const DEFAULT_PAGE_SIZE = 20;
@@ -46,6 +59,13 @@ export function AssignmentTable({ onPendingCountChange }: AssignmentTableProps) 
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+
+  // Selection state
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [showBulkUnassignDialog, setShowBulkUnassignDialog] = useState(false);
+
+  // Bulk unassign mutation
+  const bulkUnassign = useBulkUnassign();
 
   // Fetch paginated data (no server-side filtering)
   const { data, isLoading, error } = usePaginatedAssignments({
@@ -82,6 +102,42 @@ export function AssignmentTable({ onPendingCountChange }: AssignmentTableProps) 
   // Calculate pending count from filtered data (for UI purposes)
   const pendingCount = assignments.filter((trip) => !trip.assignment).length;
 
+  // Get only assigned trips for selection (can only unassign what's assigned)
+  const assignedTrips = assignments.filter((trip) => !!trip.assignment);
+
+  // Selection helpers
+  const allAssignedSelected = assignedTrips.length > 0 && assignedTrips.every((t) => selectedIds.has(t.id));
+  const someSelected = assignedTrips.some((t) => selectedIds.has(t.id));
+  const selectedCount = selectedIds.size;
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedIds(new Set(assignedTrips.map((t) => t.id)));
+    } else {
+      setSelectedIds(new Set());
+    }
+  };
+
+  const handleSelectOne = (id: string, checked: boolean) => {
+    const newSelected = new Set(selectedIds);
+    if (checked) {
+      newSelected.add(id);
+    } else {
+      newSelected.delete(id);
+    }
+    setSelectedIds(newSelected);
+  };
+
+  const handleBulkUnassign = async () => {
+    await bulkUnassign.mutateAsync(Array.from(selectedIds));
+    setSelectedIds(new Set());
+    setShowBulkUnassignDialog(false);
+  };
+
+  const clearSelection = () => {
+    setSelectedIds(new Set());
+  };
+
   // Notify parent of pending count changes
   useEffect(() => {
     onPendingCountChange?.(pendingCount);
@@ -90,6 +146,12 @@ export function AssignmentTable({ onPendingCountChange }: AssignmentTableProps) 
   const handlePageSizeChange = (newPageSize: number) => {
     setPageSize(newPageSize);
     setPage(1);
+    setSelectedIds(new Set()); // Clear selection on page change
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+    setSelectedIds(new Set()); // Clear selection on page change
   };
 
   if (error) {
@@ -110,6 +172,34 @@ export function AssignmentTable({ onPendingCountChange }: AssignmentTableProps) 
 
   return (
     <div className="space-y-4">
+      {/* Selection Toolbar */}
+      {selectedCount > 0 && (
+        <div className="flex items-center justify-between rounded-lg border bg-muted/50 px-4 py-2">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">
+              {selectedCount} {selectedCount === 1 ? "trip" : "trips"} selected
+            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearSelection}
+              className="h-7 px-2"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => setShowBulkUnassignDialog(true)}
+            disabled={bulkUnassign.isPending}
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            Unassign Selected
+          </Button>
+        </div>
+      )}
+
       {/* Search and Filter Bar */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative flex-1 max-w-sm">
@@ -148,6 +238,18 @@ export function AssignmentTable({ onPendingCountChange }: AssignmentTableProps) 
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/50">
+                  <TableHead className="w-[140px]">
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        checked={allAssignedSelected}
+                        onCheckedChange={handleSelectAll}
+                        aria-label="Select all assigned trips"
+                        className={someSelected && !allAssignedSelected ? "opacity-50" : ""}
+                        disabled={assignedTrips.length === 0}
+                      />
+                      <span className="text-xs font-medium text-muted-foreground">Select All</span>
+                    </div>
+                  </TableHead>
                   <TableHead className="font-medium">Trip ID</TableHead>
                   <TableHead className="font-medium">Date</TableHead>
                   <TableHead className="font-medium">Day</TableHead>
@@ -158,7 +260,12 @@ export function AssignmentTable({ onPendingCountChange }: AssignmentTableProps) 
               </TableHeader>
               <TableBody>
                 {assignments.map((trip) => (
-                  <AssignmentRow key={trip.id} trip={trip} />
+                  <AssignmentRow
+                    key={trip.id}
+                    trip={trip}
+                    isSelected={selectedIds.has(trip.id)}
+                    onSelectChange={(checked) => handleSelectOne(trip.id, checked)}
+                  />
                 ))}
               </TableBody>
             </Table>
@@ -167,7 +274,12 @@ export function AssignmentTable({ onPendingCountChange }: AssignmentTableProps) 
           {/* Mobile Cards */}
           <div className="md:hidden space-y-3">
             {assignments.map((trip) => (
-              <AssignmentCard key={trip.id} trip={trip} />
+              <AssignmentCard
+                key={trip.id}
+                trip={trip}
+                isSelected={selectedIds.has(trip.id)}
+                onSelectChange={(checked) => handleSelectOne(trip.id, checked)}
+              />
             ))}
           </div>
 
@@ -175,25 +287,66 @@ export function AssignmentTable({ onPendingCountChange }: AssignmentTableProps) 
           {pagination && (
             <TablePagination
               pagination={pagination}
-              onPageChange={setPage}
+              onPageChange={handlePageChange}
               onPageSizeChange={handlePageSizeChange}
               isLoading={isLoading}
             />
           )}
         </>
       )}
+
+      {/* Bulk Unassign Confirmation Dialog */}
+      <AlertDialog open={showBulkUnassignDialog} onOpenChange={setShowBulkUnassignDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Unassign {selectedCount} trips?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will remove the driver assignments from the selected trips.
+              The trips will return to pending status.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={bulkUnassign.isPending}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleBulkUnassign}
+              disabled={bulkUnassign.isPending}
+              className="bg-destructive text-white hover:bg-destructive/90"
+            >
+              {bulkUnassign.isPending ? "Unassigning..." : "Unassign"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
 
-function AssignmentRow({ trip }: { trip: Trip }) {
+function AssignmentRow({
+  trip,
+  isSelected,
+  onSelectChange,
+}: {
+  trip: Trip;
+  isSelected: boolean;
+  onSelectChange: (checked: boolean) => void;
+}) {
   const isAssigned = !!trip.assignment;
   const hasAIReasoning = trip.assignment?.isAutoAssigned && trip.assignment?.aiReasoning;
 
   return (
     <TableRow
-      className={`hover:bg-muted/50 ${!isAssigned ? "bg-amber-50/50" : ""}`}
+      className={`hover:bg-muted/50 ${!isAssigned ? "bg-amber-50/50" : ""} ${isSelected ? "bg-muted/30" : ""}`}
     >
+      <TableCell>
+        <Checkbox
+          checked={isSelected}
+          onCheckedChange={(checked) => onSelectChange(checked as boolean)}
+          aria-label={`Select trip ${trip.tripId}`}
+          disabled={!isAssigned}
+        />
+      </TableCell>
       <TableCell className="font-mono text-sm">{trip.tripId}</TableCell>
       <TableCell>{format(new Date(trip.tripDate), "MMM d, yyyy")}</TableCell>
       <TableCell>
@@ -251,7 +404,15 @@ function AssignmentRow({ trip }: { trip: Trip }) {
   );
 }
 
-function AssignmentCard({ trip }: { trip: Trip }) {
+function AssignmentCard({
+  trip,
+  isSelected,
+  onSelectChange,
+}: {
+  trip: Trip;
+  isSelected: boolean;
+  onSelectChange: (checked: boolean) => void;
+}) {
   const isAssigned = !!trip.assignment;
   const hasAIReasoning = trip.assignment?.isAutoAssigned && trip.assignment?.aiReasoning;
 
@@ -259,15 +420,24 @@ function AssignmentCard({ trip }: { trip: Trip }) {
     <div
       className={`rounded-lg border p-4 space-y-3 ${
         !isAssigned ? "bg-amber-50/50 border-amber-200" : ""
-      }`}
+      } ${isSelected ? "bg-muted/30 border-primary/50" : ""}`}
     >
       <div className="flex items-start justify-between">
-        <div>
-          <p className="font-mono text-sm font-medium">{trip.tripId}</p>
-          <p className="text-sm text-muted-foreground">
-            {format(new Date(trip.tripDate), "MMM d, yyyy")} (
-            {DAY_NAMES_SHORT[trip.dayOfWeek]})
-          </p>
+        <div className="flex items-start gap-3">
+          <Checkbox
+            checked={isSelected}
+            onCheckedChange={(checked) => onSelectChange(checked as boolean)}
+            aria-label={`Select trip ${trip.tripId}`}
+            disabled={!isAssigned}
+            className="mt-1"
+          />
+          <div>
+            <p className="font-mono text-sm font-medium">{trip.tripId}</p>
+            <p className="text-sm text-muted-foreground">
+              {format(new Date(trip.tripDate), "MMM d, yyyy")} (
+              {DAY_NAMES_SHORT[trip.dayOfWeek]})
+            </p>
+          </div>
         </div>
         {isAssigned ? (
           <Badge
@@ -312,17 +482,26 @@ function AssignmentTableSkeleton() {
       <Table>
         <TableHeader>
           <TableRow className="bg-muted/50">
+            <TableHead className="w-[140px]">
+              <div className="flex items-center gap-2">
+                <Skeleton className="h-4 w-4" />
+                <Skeleton className="h-3 w-14" />
+              </div>
+            </TableHead>
             <TableHead className="font-medium">Trip ID</TableHead>
             <TableHead className="font-medium">Date</TableHead>
             <TableHead className="font-medium">Day</TableHead>
             <TableHead className="font-medium">Status</TableHead>
             <TableHead className="font-medium">Driver</TableHead>
-            <TableHead className="font-medium">AI Reasoning</TableHead>
+            <TableHead className="font-medium">Analysis</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {[...Array(5)].map((_, i) => (
             <TableRow key={i}>
+              <TableCell>
+                <Skeleton className="h-4 w-4" />
+              </TableCell>
               <TableCell>
                 <Skeleton className="h-4 w-28" />
               </TableCell>

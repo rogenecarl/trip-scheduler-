@@ -9,6 +9,7 @@ import {
   getAssignmentStats,
   updateAssignment,
   getAvailableDriversForDay,
+  bulkUnassign,
 } from "@/actions/assignment-actions";
 import { autoAssignDrivers } from "@/actions/ai-actions";
 import type { AIAssignmentResult } from "@/lib/types";
@@ -88,6 +89,33 @@ export function useUpdateAssignment() {
     },
     onError: (error: Error) => {
       toast.error(error.message || "Failed to update assignment");
+    },
+  });
+}
+
+// ============================================
+// MUTATION: BULK UNASSIGN
+// ============================================
+
+export function useBulkUnassign() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (tripIds: string[]) => {
+      const result = await bulkUnassign(tripIds);
+      if (!result.success) throw new Error(result.error);
+      return result.data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.assignments.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.trips.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard.all });
+      toast.success(
+        `Unassigned ${data.unassigned} trip${data.unassigned !== 1 ? "s" : ""}`
+      );
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to unassign trips");
     },
   });
 }

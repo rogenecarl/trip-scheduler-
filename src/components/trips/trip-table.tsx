@@ -216,13 +216,16 @@ export function TripTable() {
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/50">
-                  <TableHead className="w-[50px]">
-                    <Checkbox
-                      checked={allSelected}
-                      onCheckedChange={handleSelectAll}
-                      aria-label="Select all trips"
-                      className={someSelected && !allSelected ? "opacity-50" : ""}
-                    />
+                  <TableHead className="w-[140px]">
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        checked={allSelected}
+                        onCheckedChange={handleSelectAll}
+                        aria-label="Select all trips"
+                        className={someSelected && !allSelected ? "opacity-50" : ""}
+                      />
+                      <span className="text-xs font-medium text-muted-foreground">Select All</span>
+                    </div>
                   </TableHead>
                   <TableHead className="font-medium">Trip ID</TableHead>
                   <TableHead className="font-medium">Date</TableHead>
@@ -414,8 +417,11 @@ function TripTableSkeleton() {
       <Table>
         <TableHeader>
           <TableRow className="bg-muted/50">
-            <TableHead className="w-[50px]">
-              <Skeleton className="h-4 w-4" />
+            <TableHead className="w-[140px]">
+              <div className="flex items-center gap-2">
+                <Skeleton className="h-4 w-4" />
+                <Skeleton className="h-3 w-14" />
+              </div>
             </TableHead>
             <TableHead className="font-medium">Trip ID</TableHead>
             <TableHead className="font-medium">Date</TableHead>

@@ -212,6 +212,29 @@ export async function getAvailableDriversForDay(
 }
 
 // ============================================
+// BULK UNASSIGN
+// ============================================
+
+export async function bulkUnassign(
+  tripIds: string[]
+): Promise<ActionResponse<{ unassigned: number }>> {
+  try {
+    const result = await prisma.tripAssignment.deleteMany({
+      where: { tripId: { in: tripIds } },
+    });
+
+    revalidatePath("/dashboard/assignments");
+    revalidatePath("/dashboard");
+    revalidatePath("/dashboard/trips");
+
+    return { success: true, data: { unassigned: result.count } };
+  } catch (error) {
+    console.error("Failed to bulk unassign:", error);
+    return { success: false, error: "Failed to unassign trips" };
+  }
+}
+
+// ============================================
 // BULK UPDATE ASSIGNMENTS
 // ============================================
 
