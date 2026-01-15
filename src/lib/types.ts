@@ -49,8 +49,8 @@ export interface TripAssignment {
   tripId: string;
   driverId: string;
   assignedAt: Date;
-  isAutoAssigned: boolean; // true = AI assigned, false = manual
-  aiReasoning?: string | null;
+  isAutoAssigned: boolean; // true = auto-assigned, false = manual
+  assignmentReasoning?: string | null;
   trip?: Trip;
   driver?: Driver;
 }
@@ -127,11 +127,11 @@ export interface AssignmentStats {
 }
 
 // ============================================
-// ASSIGNMENT TYPES (Fast Algorithm)
+// AUTO-ASSIGNMENT TYPES (Fast Algorithm)
 // ============================================
 
 /** Assignment result from the fast algorithm */
-export interface AIAssignment {
+export interface AutoAssignment {
   tripId: string;
   driverId: string;
   reasoning: string;
@@ -152,9 +152,9 @@ export interface AssignmentResultStats {
 }
 
 /** Result from autoAssignDrivers() */
-export interface AIAssignmentResult {
+export interface AutoAssignmentResult {
   success: boolean;
-  assignments?: AIAssignment[];
+  assignments?: AutoAssignment[];
   summary?: string;
   warnings?: string[];
   error?: string;

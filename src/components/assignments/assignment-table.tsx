@@ -335,7 +335,7 @@ function AssignmentRow({
   onSelectChange: (checked: boolean) => void;
 }) {
   const isAssigned = !!trip.assignment;
-  const hasAIReasoning = trip.assignment?.isAutoAssigned && trip.assignment?.aiReasoning;
+  const hasReasoning = trip.assignment?.isAutoAssigned && trip.assignment?.assignmentReasoning;
 
   return (
     <TableRow
@@ -390,19 +390,19 @@ function AssignmentRow({
         />
       </TableCell>
       <TableCell className="max-w-50">
-        {hasAIReasoning ? (
+        {hasReasoning ? (
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
                 <div className="flex items-center gap-1.5 text-sm text-muted-foreground cursor-help">
                   <Sparkles className="h-3.5 w-3.5 text-primary" />
                   <span className="truncate max-w-37.5">
-                    {trip.assignment?.aiReasoning}
+                    {trip.assignment?.assignmentReasoning}
                   </span>
                 </div>
               </TooltipTrigger>
               <TooltipContent side="left" className="max-w-xs">
-                <p>{trip.assignment?.aiReasoning}</p>
+                <p>{trip.assignment?.assignmentReasoning}</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -426,7 +426,7 @@ function AssignmentCard({
   onSelectChange: (checked: boolean) => void;
 }) {
   const isAssigned = !!trip.assignment;
-  const hasAIReasoning = trip.assignment?.isAutoAssigned && trip.assignment?.aiReasoning;
+  const hasReasoning = trip.assignment?.isAutoAssigned && trip.assignment?.assignmentReasoning;
 
   return (
     <div
@@ -489,10 +489,10 @@ function AssignmentCard({
         />
       </div>
 
-      {hasAIReasoning && (
+      {hasReasoning && (
         <div className="flex items-start gap-2 pt-2 border-t text-sm">
           <Sparkles className="h-3.5 w-3.5 text-primary mt-0.5 shrink-0" />
-          <p className="text-muted-foreground">{trip.assignment?.aiReasoning}</p>
+          <p className="text-muted-foreground">{trip.assignment?.assignmentReasoning}</p>
         </div>
       )}
     </div>

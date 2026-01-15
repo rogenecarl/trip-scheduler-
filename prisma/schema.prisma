@@ -95,12 +95,12 @@ model Trip {
 }
 
 model TripAssignment {
-  id             String   @id @default(cuid())
-  tripId         String   @unique
-  driverId       String
-  assignedAt     DateTime @default(now())
-  isAutoAssigned Boolean  @default(false) // true if assigned by AI, false if manual
-  aiReasoning    String?  @db.Text
+  id                  String   @id @default(cuid())
+  tripId              String   @unique
+  driverId            String
+  assignedAt          DateTime @default(now())
+  isAutoAssigned      Boolean  @default(false) // true if auto-assigned, false if manual
+  assignmentReasoning String?  @db.Text // Explanation for the assignment
 
   // Relations
   trip   Trip   @relation(fields: [tripId], references: [id], onDelete: Cascade)

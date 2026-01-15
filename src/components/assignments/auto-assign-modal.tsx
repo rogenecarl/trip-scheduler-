@@ -19,13 +19,13 @@ import {
   Zap,
   User,
 } from "lucide-react";
-import type { AIAssignmentResult, DriverDistribution } from "@/lib/types";
+import type { AutoAssignmentResult, DriverDistribution } from "@/lib/types";
 
 interface AssignmentResultModalProps {
   open: boolean;
   onClose: () => void;
   isProcessing: boolean;
-  result: AIAssignmentResult | null;
+  result: AutoAssignmentResult | null;
   pendingCount: number;
 }
 
@@ -150,7 +150,7 @@ function ProcessingState({ pendingCount }: { pendingCount: number }) {
   );
 }
 
-function SuccessState({ result }: { result: AIAssignmentResult }) {
+function SuccessState({ result }: { result: AutoAssignmentResult }) {
   const stats = result.stats;
   const distribution = result.distribution || [];
   const warnings = result.warnings || [];
@@ -271,5 +271,5 @@ function ErrorState({ error }: { error?: string }) {
   );
 }
 
-// Legacy export for backwards compatibility
-export const AIProcessingModal = AssignmentResultModal;
+// Alias for backwards compatibility
+export const AutoAssignModal = AssignmentResultModal;

@@ -127,7 +127,7 @@ export const TripAssignmentScalarFieldEnum = {
   driverId: 'driverId',
   assignedAt: 'assignedAt',
   isAutoAssigned: 'isAutoAssigned',
-  aiReasoning: 'aiReasoning'
+  assignmentReasoning: 'assignmentReasoning'
 } as const
 
 export type TripAssignmentScalarFieldEnum = (typeof TripAssignmentScalarFieldEnum)[keyof typeof TripAssignmentScalarFieldEnum]

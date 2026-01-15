@@ -33,7 +33,7 @@ export function ExportDropdown({ assignments, disabled }: ExportDropdownProps) {
       trip.plannedArrivalTime || "",
       DAY_NAMES[trip.dayOfWeek],
       trip.assignment?.driver?.name || "Unassigned",
-      trip.assignment?.aiReasoning || "",
+      trip.assignment?.assignmentReasoning || "",
     ]);
 
     const csvContent = [headers, ...rows]
@@ -75,7 +75,7 @@ export function ExportDropdown({ assignments, disabled }: ExportDropdownProps) {
     const rows = assignments
       .map(
         (trip) =>
-          `${trip.tripId}\t${trip.tripStage}\t${format(new Date(trip.tripDate), "MMM d, yyyy")}\t${trip.plannedArrivalTime || ""}\t${DAY_NAMES[trip.dayOfWeek]}\t${trip.assignment?.driver?.name || "Unassigned"}\t${trip.assignment?.aiReasoning || ""}`
+          `${trip.tripId}\t${trip.tripStage}\t${format(new Date(trip.tripDate), "MMM d, yyyy")}\t${trip.plannedArrivalTime || ""}\t${DAY_NAMES[trip.dayOfWeek]}\t${trip.assignment?.driver?.name || "Unassigned"}\t${trip.assignment?.assignmentReasoning || ""}`
       )
       .join("\n");
 

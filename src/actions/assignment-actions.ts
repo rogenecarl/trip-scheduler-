@@ -166,7 +166,7 @@ export async function updateAssignment(
         update: {
           driverId,
           isAutoAssigned: false,
-          aiReasoning: null, // Clear AI reasoning on manual update
+          assignmentReasoning: null, // Clear reasoning on manual update
         },
         include: { driver: true },
       });
@@ -250,12 +250,12 @@ export async function bulkUpdateAssignments(
             tripId: assignment.tripId,
             driverId: assignment.driverId,
             isAutoAssigned: true,
-            aiReasoning: assignment.reasoning,
+            assignmentReasoning: assignment.reasoning,
           },
           update: {
             driverId: assignment.driverId,
             isAutoAssigned: true,
-            aiReasoning: assignment.reasoning,
+            assignmentReasoning: assignment.reasoning,
           },
         })
       )

@@ -11,8 +11,8 @@ import {
   getAvailableDriversForDay,
   bulkUnassign,
 } from "@/actions/assignment-actions";
-import { autoAssignDrivers } from "@/actions/ai-actions";
-import type { AIAssignmentResult } from "@/lib/types";
+import { autoAssignDrivers } from "@/actions/auto-assign-actions";
+import type { AutoAssignmentResult } from "@/lib/types";
 
 // ============================================
 // QUERY: LIST ALL ASSIGNMENTS
@@ -168,7 +168,7 @@ export function useAutoAssignWithResult() {
   const queryClient = useQueryClient();
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const startAssignment = useCallback(async (): Promise<AIAssignmentResult> => {
+  const startAssignment = useCallback(async (): Promise<AutoAssignmentResult> => {
     setIsProcessing(true);
 
     try {
@@ -221,6 +221,3 @@ export function useAutoAssignWithResult() {
   };
 }
 
-// Legacy alias for backwards compatibility
-export const useAIAssign = useAutoAssign;
-export const useAIAssignWithProgress = useAutoAssignWithResult;

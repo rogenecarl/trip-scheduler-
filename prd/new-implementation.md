@@ -522,7 +522,7 @@ src/
 │   ├── driver-actions.ts             # Driver CRUD server actions
 │   ├── trip-actions.ts               # Trip CRUD server actions
 │   ├── assignment-actions.ts         # Assignment server actions
-│   └── ai-actions.ts                 # Gemini AI server actions
+│   └── auto-assign-actions.ts        # Auto-assignment server actions
 │
 ├── components/
 │   ├── ui/                           # shadcn/ui components
@@ -2472,7 +2472,7 @@ NOTE: Gemini client (lib/gemini.ts) is already configured with exports: genAI, M
 
 REQUIREMENTS:
 
-1. Server Action (actions/ai-actions.ts):
+1. Server Action (actions/auto-assign-actions.ts):
 ```typescript
 "use server"
 
@@ -2712,12 +2712,12 @@ Respond with only valid JSON, no additional text.`;
 }
 ```
 
-2. Hook (hooks/use-ai-assign.ts):
+2. Hook (hooks/use-auto-assign.ts):
 ```typescript
 "use client"
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { autoAssignDrivers } from "@/actions/ai-actions";
+import { autoAssignDrivers } from "@/actions/auto-assign-actions";
 import { toast } from "sonner";
 
 export function useAIAssign() {

@@ -4,13 +4,13 @@ import prisma from "@/lib/prisma";
 import { getActiveDriversCached, invalidateDriverCache } from "@/lib/cache";
 import { assignTripsToDrivers } from "@/lib/assignment-algorithm";
 import { revalidatePath } from "next/cache";
-import type { AIAssignmentResult } from "@/lib/types";
+import type { AutoAssignmentResult } from "@/lib/types";
 
 /**
  * Auto-assign drivers to unassigned trips
- * Uses fast algorithm (no AI) - completes in ~100ms
+ * Uses fast algorithm - completes in ~100ms
  */
-export async function autoAssignDrivers(): Promise<AIAssignmentResult> {
+export async function autoAssignDrivers(): Promise<AutoAssignmentResult> {
   const startTime = performance.now();
 
   try {
@@ -65,7 +65,7 @@ export async function autoAssignDrivers(): Promise<AIAssignmentResult> {
           tripId: a.tripId,
           driverId: a.driverId,
           isAutoAssigned: true,
-          aiReasoning: a.reasoning,
+          assignmentReasoning: a.reasoning,
         })),
         skipDuplicates: true,
       });

@@ -30,7 +30,7 @@ export type TripAssignmentMinAggregateOutputType = {
   driverId: string | null
   assignedAt: Date | null
   isAutoAssigned: boolean | null
-  aiReasoning: string | null
+  assignmentReasoning: string | null
 }
 
 export type TripAssignmentMaxAggregateOutputType = {
@@ -39,7 +39,7 @@ export type TripAssignmentMaxAggregateOutputType = {
   driverId: string | null
   assignedAt: Date | null
   isAutoAssigned: boolean | null
-  aiReasoning: string | null
+  assignmentReasoning: string | null
 }
 
 export type TripAssignmentCountAggregateOutputType = {
@@ -48,7 +48,7 @@ export type TripAssignmentCountAggregateOutputType = {
   driverId: number
   assignedAt: number
   isAutoAssigned: number
-  aiReasoning: number
+  assignmentReasoning: number
   _all: number
 }
 
@@ -59,7 +59,7 @@ export type TripAssignmentMinAggregateInputType = {
   driverId?: true
   assignedAt?: true
   isAutoAssigned?: true
-  aiReasoning?: true
+  assignmentReasoning?: true
 }
 
 export type TripAssignmentMaxAggregateInputType = {
@@ -68,7 +68,7 @@ export type TripAssignmentMaxAggregateInputType = {
   driverId?: true
   assignedAt?: true
   isAutoAssigned?: true
-  aiReasoning?: true
+  assignmentReasoning?: true
 }
 
 export type TripAssignmentCountAggregateInputType = {
@@ -77,7 +77,7 @@ export type TripAssignmentCountAggregateInputType = {
   driverId?: true
   assignedAt?: true
   isAutoAssigned?: true
-  aiReasoning?: true
+  assignmentReasoning?: true
   _all?: true
 }
 
@@ -159,7 +159,7 @@ export type TripAssignmentGroupByOutputType = {
   driverId: string
   assignedAt: Date
   isAutoAssigned: boolean
-  aiReasoning: string | null
+  assignmentReasoning: string | null
   _count: TripAssignmentCountAggregateOutputType | null
   _min: TripAssignmentMinAggregateOutputType | null
   _max: TripAssignmentMaxAggregateOutputType | null
@@ -189,7 +189,7 @@ export type TripAssignmentWhereInput = {
   driverId?: Prisma.StringFilter<"TripAssignment"> | string
   assignedAt?: Prisma.DateTimeFilter<"TripAssignment"> | Date | string
   isAutoAssigned?: Prisma.BoolFilter<"TripAssignment"> | boolean
-  aiReasoning?: Prisma.StringNullableFilter<"TripAssignment"> | string | null
+  assignmentReasoning?: Prisma.StringNullableFilter<"TripAssignment"> | string | null
   trip?: Prisma.XOR<Prisma.TripScalarRelationFilter, Prisma.TripWhereInput>
   driver?: Prisma.XOR<Prisma.DriverScalarRelationFilter, Prisma.DriverWhereInput>
 }
@@ -200,7 +200,7 @@ export type TripAssignmentOrderByWithRelationInput = {
   driverId?: Prisma.SortOrder
   assignedAt?: Prisma.SortOrder
   isAutoAssigned?: Prisma.SortOrder
-  aiReasoning?: Prisma.SortOrderInput | Prisma.SortOrder
+  assignmentReasoning?: Prisma.SortOrderInput | Prisma.SortOrder
   trip?: Prisma.TripOrderByWithRelationInput
   driver?: Prisma.DriverOrderByWithRelationInput
 }
@@ -214,7 +214,7 @@ export type TripAssignmentWhereUniqueInput = Prisma.AtLeast<{
   driverId?: Prisma.StringFilter<"TripAssignment"> | string
   assignedAt?: Prisma.DateTimeFilter<"TripAssignment"> | Date | string
   isAutoAssigned?: Prisma.BoolFilter<"TripAssignment"> | boolean
-  aiReasoning?: Prisma.StringNullableFilter<"TripAssignment"> | string | null
+  assignmentReasoning?: Prisma.StringNullableFilter<"TripAssignment"> | string | null
   trip?: Prisma.XOR<Prisma.TripScalarRelationFilter, Prisma.TripWhereInput>
   driver?: Prisma.XOR<Prisma.DriverScalarRelationFilter, Prisma.DriverWhereInput>
 }, "id" | "tripId">
@@ -225,7 +225,7 @@ export type TripAssignmentOrderByWithAggregationInput = {
   driverId?: Prisma.SortOrder
   assignedAt?: Prisma.SortOrder
   isAutoAssigned?: Prisma.SortOrder
-  aiReasoning?: Prisma.SortOrderInput | Prisma.SortOrder
+  assignmentReasoning?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.TripAssignmentCountOrderByAggregateInput
   _max?: Prisma.TripAssignmentMaxOrderByAggregateInput
   _min?: Prisma.TripAssignmentMinOrderByAggregateInput
@@ -240,14 +240,14 @@ export type TripAssignmentScalarWhereWithAggregatesInput = {
   driverId?: Prisma.StringWithAggregatesFilter<"TripAssignment"> | string
   assignedAt?: Prisma.DateTimeWithAggregatesFilter<"TripAssignment"> | Date | string
   isAutoAssigned?: Prisma.BoolWithAggregatesFilter<"TripAssignment"> | boolean
-  aiReasoning?: Prisma.StringNullableWithAggregatesFilter<"TripAssignment"> | string | null
+  assignmentReasoning?: Prisma.StringNullableWithAggregatesFilter<"TripAssignment"> | string | null
 }
 
 export type TripAssignmentCreateInput = {
   id?: string
   assignedAt?: Date | string
   isAutoAssigned?: boolean
-  aiReasoning?: string | null
+  assignmentReasoning?: string | null
   trip: Prisma.TripCreateNestedOneWithoutAssignmentInput
   driver: Prisma.DriverCreateNestedOneWithoutAssignmentsInput
 }
@@ -258,14 +258,14 @@ export type TripAssignmentUncheckedCreateInput = {
   driverId: string
   assignedAt?: Date | string
   isAutoAssigned?: boolean
-  aiReasoning?: string | null
+  assignmentReasoning?: string | null
 }
 
 export type TripAssignmentUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   assignedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   isAutoAssigned?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  aiReasoning?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assignmentReasoning?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   trip?: Prisma.TripUpdateOneRequiredWithoutAssignmentNestedInput
   driver?: Prisma.DriverUpdateOneRequiredWithoutAssignmentsNestedInput
 }
@@ -276,7 +276,7 @@ export type TripAssignmentUncheckedUpdateInput = {
   driverId?: Prisma.StringFieldUpdateOperationsInput | string
   assignedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   isAutoAssigned?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  aiReasoning?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assignmentReasoning?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type TripAssignmentCreateManyInput = {
@@ -285,14 +285,14 @@ export type TripAssignmentCreateManyInput = {
   driverId: string
   assignedAt?: Date | string
   isAutoAssigned?: boolean
-  aiReasoning?: string | null
+  assignmentReasoning?: string | null
 }
 
 export type TripAssignmentUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   assignedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   isAutoAssigned?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  aiReasoning?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assignmentReasoning?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type TripAssignmentUncheckedUpdateManyInput = {
@@ -301,7 +301,7 @@ export type TripAssignmentUncheckedUpdateManyInput = {
   driverId?: Prisma.StringFieldUpdateOperationsInput | string
   assignedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   isAutoAssigned?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  aiReasoning?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assignmentReasoning?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type TripAssignmentListRelationFilter = {
@@ -325,7 +325,7 @@ export type TripAssignmentCountOrderByAggregateInput = {
   driverId?: Prisma.SortOrder
   assignedAt?: Prisma.SortOrder
   isAutoAssigned?: Prisma.SortOrder
-  aiReasoning?: Prisma.SortOrder
+  assignmentReasoning?: Prisma.SortOrder
 }
 
 export type TripAssignmentMaxOrderByAggregateInput = {
@@ -334,7 +334,7 @@ export type TripAssignmentMaxOrderByAggregateInput = {
   driverId?: Prisma.SortOrder
   assignedAt?: Prisma.SortOrder
   isAutoAssigned?: Prisma.SortOrder
-  aiReasoning?: Prisma.SortOrder
+  assignmentReasoning?: Prisma.SortOrder
 }
 
 export type TripAssignmentMinOrderByAggregateInput = {
@@ -343,7 +343,7 @@ export type TripAssignmentMinOrderByAggregateInput = {
   driverId?: Prisma.SortOrder
   assignedAt?: Prisma.SortOrder
   isAutoAssigned?: Prisma.SortOrder
-  aiReasoning?: Prisma.SortOrder
+  assignmentReasoning?: Prisma.SortOrder
 }
 
 export type TripAssignmentCreateNestedManyWithoutDriverInput = {
@@ -424,7 +424,7 @@ export type TripAssignmentCreateWithoutDriverInput = {
   id?: string
   assignedAt?: Date | string
   isAutoAssigned?: boolean
-  aiReasoning?: string | null
+  assignmentReasoning?: string | null
   trip: Prisma.TripCreateNestedOneWithoutAssignmentInput
 }
 
@@ -433,7 +433,7 @@ export type TripAssignmentUncheckedCreateWithoutDriverInput = {
   tripId: string
   assignedAt?: Date | string
   isAutoAssigned?: boolean
-  aiReasoning?: string | null
+  assignmentReasoning?: string | null
 }
 
 export type TripAssignmentCreateOrConnectWithoutDriverInput = {
@@ -471,14 +471,14 @@ export type TripAssignmentScalarWhereInput = {
   driverId?: Prisma.StringFilter<"TripAssignment"> | string
   assignedAt?: Prisma.DateTimeFilter<"TripAssignment"> | Date | string
   isAutoAssigned?: Prisma.BoolFilter<"TripAssignment"> | boolean
-  aiReasoning?: Prisma.StringNullableFilter<"TripAssignment"> | string | null
+  assignmentReasoning?: Prisma.StringNullableFilter<"TripAssignment"> | string | null
 }
 
 export type TripAssignmentCreateWithoutTripInput = {
   id?: string
   assignedAt?: Date | string
   isAutoAssigned?: boolean
-  aiReasoning?: string | null
+  assignmentReasoning?: string | null
   driver: Prisma.DriverCreateNestedOneWithoutAssignmentsInput
 }
 
@@ -487,7 +487,7 @@ export type TripAssignmentUncheckedCreateWithoutTripInput = {
   driverId: string
   assignedAt?: Date | string
   isAutoAssigned?: boolean
-  aiReasoning?: string | null
+  assignmentReasoning?: string | null
 }
 
 export type TripAssignmentCreateOrConnectWithoutTripInput = {
@@ -510,7 +510,7 @@ export type TripAssignmentUpdateWithoutTripInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   assignedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   isAutoAssigned?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  aiReasoning?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assignmentReasoning?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   driver?: Prisma.DriverUpdateOneRequiredWithoutAssignmentsNestedInput
 }
 
@@ -519,7 +519,7 @@ export type TripAssignmentUncheckedUpdateWithoutTripInput = {
   driverId?: Prisma.StringFieldUpdateOperationsInput | string
   assignedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   isAutoAssigned?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  aiReasoning?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assignmentReasoning?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type TripAssignmentCreateManyDriverInput = {
@@ -527,14 +527,14 @@ export type TripAssignmentCreateManyDriverInput = {
   tripId: string
   assignedAt?: Date | string
   isAutoAssigned?: boolean
-  aiReasoning?: string | null
+  assignmentReasoning?: string | null
 }
 
 export type TripAssignmentUpdateWithoutDriverInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   assignedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   isAutoAssigned?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  aiReasoning?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assignmentReasoning?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   trip?: Prisma.TripUpdateOneRequiredWithoutAssignmentNestedInput
 }
 
@@ -543,7 +543,7 @@ export type TripAssignmentUncheckedUpdateWithoutDriverInput = {
   tripId?: Prisma.StringFieldUpdateOperationsInput | string
   assignedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   isAutoAssigned?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  aiReasoning?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assignmentReasoning?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type TripAssignmentUncheckedUpdateManyWithoutDriverInput = {
@@ -551,7 +551,7 @@ export type TripAssignmentUncheckedUpdateManyWithoutDriverInput = {
   tripId?: Prisma.StringFieldUpdateOperationsInput | string
   assignedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   isAutoAssigned?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  aiReasoning?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  assignmentReasoning?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 
@@ -562,7 +562,7 @@ export type TripAssignmentSelect<ExtArgs extends runtime.Types.Extensions.Intern
   driverId?: boolean
   assignedAt?: boolean
   isAutoAssigned?: boolean
-  aiReasoning?: boolean
+  assignmentReasoning?: boolean
   trip?: boolean | Prisma.TripDefaultArgs<ExtArgs>
   driver?: boolean | Prisma.DriverDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["tripAssignment"]>
@@ -573,7 +573,7 @@ export type TripAssignmentSelectCreateManyAndReturn<ExtArgs extends runtime.Type
   driverId?: boolean
   assignedAt?: boolean
   isAutoAssigned?: boolean
-  aiReasoning?: boolean
+  assignmentReasoning?: boolean
   trip?: boolean | Prisma.TripDefaultArgs<ExtArgs>
   driver?: boolean | Prisma.DriverDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["tripAssignment"]>
@@ -584,7 +584,7 @@ export type TripAssignmentSelectUpdateManyAndReturn<ExtArgs extends runtime.Type
   driverId?: boolean
   assignedAt?: boolean
   isAutoAssigned?: boolean
-  aiReasoning?: boolean
+  assignmentReasoning?: boolean
   trip?: boolean | Prisma.TripDefaultArgs<ExtArgs>
   driver?: boolean | Prisma.DriverDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["tripAssignment"]>
@@ -595,10 +595,10 @@ export type TripAssignmentSelectScalar = {
   driverId?: boolean
   assignedAt?: boolean
   isAutoAssigned?: boolean
-  aiReasoning?: boolean
+  assignmentReasoning?: boolean
 }
 
-export type TripAssignmentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "tripId" | "driverId" | "assignedAt" | "isAutoAssigned" | "aiReasoning", ExtArgs["result"]["tripAssignment"]>
+export type TripAssignmentOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "tripId" | "driverId" | "assignedAt" | "isAutoAssigned" | "assignmentReasoning", ExtArgs["result"]["tripAssignment"]>
 export type TripAssignmentInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   trip?: boolean | Prisma.TripDefaultArgs<ExtArgs>
   driver?: boolean | Prisma.DriverDefaultArgs<ExtArgs>
@@ -624,7 +624,7 @@ export type $TripAssignmentPayload<ExtArgs extends runtime.Types.Extensions.Inte
     driverId: string
     assignedAt: Date
     isAutoAssigned: boolean
-    aiReasoning: string | null
+    assignmentReasoning: string | null
   }, ExtArgs["result"]["tripAssignment"]>
   composites: {}
 }
@@ -1055,7 +1055,7 @@ export interface TripAssignmentFieldRefs {
   readonly driverId: Prisma.FieldRef<"TripAssignment", 'String'>
   readonly assignedAt: Prisma.FieldRef<"TripAssignment", 'DateTime'>
   readonly isAutoAssigned: Prisma.FieldRef<"TripAssignment", 'Boolean'>
-  readonly aiReasoning: Prisma.FieldRef<"TripAssignment", 'String'>
+  readonly assignmentReasoning: Prisma.FieldRef<"TripAssignment", 'String'>
 }
     
 

@@ -3,9 +3,9 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Zap } from "lucide-react";
-import { AssignmentResultModal } from "./ai-processing-modal";
+import { AssignmentResultModal } from "./auto-assign-modal";
 import { useAutoAssignWithResult } from "@/hooks/use-assignments";
-import type { AIAssignmentResult } from "@/lib/types";
+import type { AutoAssignmentResult } from "@/lib/types";
 
 interface AutoAssignButtonProps {
   pendingCount: number;
@@ -13,7 +13,7 @@ interface AutoAssignButtonProps {
 
 export function AutoAssignButton({ pendingCount }: AutoAssignButtonProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [result, setResult] = useState<AIAssignmentResult | null>(null);
+  const [result, setResult] = useState<AutoAssignmentResult | null>(null);
   const { startAssignment, isProcessing, reset } = useAutoAssignWithResult();
 
   const handleAutoAssign = async () => {
