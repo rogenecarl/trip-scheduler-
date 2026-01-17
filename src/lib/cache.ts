@@ -10,7 +10,10 @@ export const getActiveDriversCached = unstable_cache(
   async () => {
     return prisma.driver.findMany({
       where: { isActive: true },
-      include: {
+      select: {
+        id: true,
+        name: true,
+        priority: true,
         availability: {
           where: { isAvailable: true },
           select: { dayOfWeek: true },

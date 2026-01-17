@@ -8,14 +8,22 @@ import type { AutoAssignmentResult } from "@/lib/types";
 
 /**
  * Auto-assign drivers to unassigned trips
- * Uses fast algorithm - completes in ~100ms
+ *
+ * Performance optimizations:
+ * - Parallel database queries
+ * - Drivers cached for 5 minutes
+ * - Algorithm uses O(1) lookups with Maps
+ * - Batch insert for new assignments
+ *
+ * Typical performance: ~50-200ms for 100+ trips
  */
 export async function autoAssignDrivers(): Promise<AutoAssignmentResult> {
   const startTime = performance.now();
 
   try {
-    // Parallel fetch - drivers are cached
-    const [trips, drivers] = await Promise.all([
+    // Parallel fetch: unassigned trips, existing assignments, and drivers (cached)
+    const [unassignedTrips, existingAssignments, drivers] = await Promise.all([
+      // Unassigned trips to process
       prisma.trip.findMany({
         where: {
           assignment: null,
@@ -26,16 +34,36 @@ export async function autoAssignDrivers(): Promise<AutoAssignmentResult> {
           tripId: true,
           tripDate: true,
           dayOfWeek: true,
+          plannedArrivalTime: true,
         },
-        orderBy: {
-          tripDate: "asc",
+        orderBy: [
+          { tripDate: "asc" },
+          { plannedArrivalTime: "asc" },
+        ],
+      }),
+      // Existing assignments to avoid time conflicts
+      prisma.tripAssignment.findMany({
+        where: {
+          trip: {
+            tripStage: "Upcoming",
+          },
+        },
+        select: {
+          driverId: true,
+          trip: {
+            select: {
+              tripDate: true,
+              plannedArrivalTime: true,
+            },
+          },
         },
       }),
+      // Active drivers (cached)
       getActiveDriversCached(),
     ]);
 
     // Handle empty cases
-    if (trips.length === 0) {
+    if (unassignedTrips.length === 0) {
       return {
         success: true,
         summary: "No unassigned trips to process",
@@ -51,12 +79,19 @@ export async function autoAssignDrivers(): Promise<AutoAssignmentResult> {
       return {
         success: false,
         error: "No active drivers available. Please add drivers first.",
-        stats: { totalTrips: trips.length, assignedCount: 0, unassignedCount: trips.length },
+        stats: { totalTrips: unassignedTrips.length, assignedCount: 0, unassignedCount: unassignedTrips.length },
       };
     }
 
-    // Fast algorithm assignment
-    const result = assignTripsToDrivers(trips, drivers);
+    // Transform existing assignments for the algorithm
+    const existingForAlgorithm = existingAssignments.map((a) => ({
+      driverId: a.driverId,
+      tripDate: a.trip.tripDate,
+      plannedArrivalTime: a.trip.plannedArrivalTime,
+    }));
+
+    // Fast algorithm assignment (with existing assignments awareness)
+    const result = assignTripsToDrivers(unassignedTrips, drivers, existingForAlgorithm);
 
     // Batch insert assignments
     if (result.assignments.length > 0) {

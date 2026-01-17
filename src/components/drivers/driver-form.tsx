@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Form,
   FormControl,
@@ -15,12 +16,15 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { AvailabilityPicker } from "./availability-picker";
+import { PriorityPicker } from "./priority-picker";
 import type { Driver } from "@/lib/types";
 import { Loader2 } from "lucide-react";
 
 const driverFormSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   availability: z.array(z.number()).min(1, "Select at least one day"),
+  priority: z.number().min(1).max(3),
+  priorityNote: z.string().optional().nullable(),
 });
 
 type DriverFormValues = z.infer<typeof driverFormSchema>;
@@ -48,6 +52,8 @@ export function DriverForm({
     defaultValues: {
       name: driver?.name ?? "",
       availability: initialAvailability,
+      priority: driver?.priority ?? 2,
+      priorityNote: driver?.priorityNote ?? "",
     },
   });
 
@@ -91,6 +97,51 @@ export function DriverForm({
                   value={field.value}
                   onChange={field.onChange}
                   disabled={isLoading}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="priority"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Priority Level</FormLabel>
+              <FormDescription>
+                Higher priority drivers are scheduled first
+              </FormDescription>
+              <FormControl>
+                <PriorityPicker
+                  value={field.value}
+                  onChange={field.onChange}
+                  disabled={isLoading}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="priorityNote"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Priority Note</FormLabel>
+              <FormDescription>
+                Optional note explaining the priority level
+              </FormDescription>
+              <FormControl>
+                <Textarea
+                  placeholder="e.g., Top performer, 98% completion rate"
+                  className="resize-none"
+                  rows={2}
+                  disabled={isLoading}
+                  {...field}
+                  value={field.value ?? ""}
                 />
               </FormControl>
               <FormMessage />

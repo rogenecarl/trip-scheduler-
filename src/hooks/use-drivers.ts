@@ -41,10 +41,19 @@ export function useCreateDriver() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (input: { name: string; availability: number[] }) => {
+    mutationFn: async (input: {
+      name: string;
+      availability: number[];
+      priority: number;
+      priorityNote?: string | null;
+    }) => {
       const formData = new FormData();
       formData.append("name", input.name);
       formData.append("availability", JSON.stringify(input.availability));
+      formData.append("priority", input.priority.toString());
+      if (input.priorityNote) {
+        formData.append("priorityNote", input.priorityNote);
+      }
       const result = await createDriver(formData);
       if (!result.success) throw new Error(result.error);
       return result.data;
@@ -74,11 +83,20 @@ export function useUpdateDriver() {
       input,
     }: {
       id: string;
-      input: { name: string; availability: number[] };
+      input: {
+        name: string;
+        availability: number[];
+        priority: number;
+        priorityNote?: string | null;
+      };
     }) => {
       const formData = new FormData();
       formData.append("name", input.name);
       formData.append("availability", JSON.stringify(input.availability));
+      formData.append("priority", input.priority.toString());
+      if (input.priorityNote) {
+        formData.append("priorityNote", input.priorityNote);
+      }
       const result = await updateDriver(id, formData);
       if (!result.success) throw new Error(result.error);
       return result.data;

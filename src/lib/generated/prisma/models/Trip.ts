@@ -481,10 +481,6 @@ export type TripUncheckedUpdateManyWithoutWeekUploadNestedInput = {
   deleteMany?: Prisma.TripScalarWhereInput | Prisma.TripScalarWhereInput[]
 }
 
-export type NullableStringFieldUpdateOperationsInput = {
-  set?: string | null
-}
-
 export type TripCreateNestedOneWithoutAssignmentInput = {
   create?: Prisma.XOR<Prisma.TripCreateWithoutAssignmentInput, Prisma.TripUncheckedCreateWithoutAssignmentInput>
   connectOrCreate?: Prisma.TripCreateOrConnectWithoutAssignmentInput

@@ -6,11 +6,34 @@ export interface Driver {
   id: string;
   name: string;
   isActive: boolean;
+  priority: number; // 1 = High, 2 = Medium, 3 = Low
+  priorityNote: string | null;
   createdAt: Date;
   updatedAt: Date;
   availability: DriverAvailability[];
   assignments?: TripAssignment[];
 }
+
+// Priority level constants
+export const PRIORITY_LEVELS = {
+  HIGH: 1,
+  MEDIUM: 2,
+  LOW: 3,
+} as const;
+
+export type PriorityLevel = (typeof PRIORITY_LEVELS)[keyof typeof PRIORITY_LEVELS];
+
+export const PRIORITY_LABELS: Record<PriorityLevel, string> = {
+  [PRIORITY_LEVELS.HIGH]: "High",
+  [PRIORITY_LEVELS.MEDIUM]: "Medium",
+  [PRIORITY_LEVELS.LOW]: "Low",
+};
+
+export const PRIORITY_DESCRIPTIONS: Record<PriorityLevel, string> = {
+  [PRIORITY_LEVELS.HIGH]: "Top performers, always prioritized first",
+  [PRIORITY_LEVELS.MEDIUM]: "Standard priority drivers",
+  [PRIORITY_LEVELS.LOW]: "Backup drivers, assigned when others unavailable",
+};
 
 export interface DriverAvailability {
   id: string;

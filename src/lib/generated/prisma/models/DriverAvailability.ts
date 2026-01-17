@@ -387,14 +387,6 @@ export type DriverAvailabilityUncheckedUpdateManyWithoutDriverNestedInput = {
   deleteMany?: Prisma.DriverAvailabilityScalarWhereInput | Prisma.DriverAvailabilityScalarWhereInput[]
 }
 
-export type IntFieldUpdateOperationsInput = {
-  set?: number
-  increment?: number
-  decrement?: number
-  multiply?: number
-  divide?: number
-}
-
 export type DriverAvailabilityCreateWithoutDriverInput = {
   id?: string
   dayOfWeek: number

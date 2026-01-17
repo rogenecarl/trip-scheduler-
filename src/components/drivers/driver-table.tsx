@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { TablePagination } from "@/components/ui/table-pagination";
 import { AvailabilityDisplay } from "./availability-picker";
+import { PriorityDisplay } from "./priority-picker";
 import { DriverDialog } from "./driver-dialog";
 import { DeleteDriverDialog } from "./delete-driver-dialog";
 import { usePaginatedDrivers } from "@/hooks/use-paginated-drivers";
@@ -203,6 +204,7 @@ export function DriverTable() {
                     </div>
                   </TableHead>
                   <TableHead className="font-medium">Name</TableHead>
+                  <TableHead className="font-medium">Priority</TableHead>
                   <TableHead className="font-medium">Availability</TableHead>
                   <TableHead className="font-medium w-25">Actions</TableHead>
                 </TableRow>
@@ -223,6 +225,9 @@ export function DriverTable() {
                       />
                     </TableCell>
                     <TableCell className="font-medium">{driver.name}</TableCell>
+                    <TableCell>
+                      <PriorityDisplay priority={driver.priority} size="sm" />
+                    </TableCell>
                     <TableCell>
                       <AvailabilityDisplay
                         availability={driver.availability}
@@ -294,14 +299,18 @@ export function DriverTable() {
                     </Button>
                   </div>
                 </div>
-                <div className="pl-7">
-                  <p className="text-xs text-muted-foreground mb-2">
-                    Availability
-                  </p>
-                  <AvailabilityDisplay
-                    availability={driver.availability}
-                    size="default"
-                  />
+                <div className="pl-7 space-y-3">
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Priority</p>
+                    <PriorityDisplay priority={driver.priority} size="default" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Availability</p>
+                    <AvailabilityDisplay
+                      availability={driver.availability}
+                      size="default"
+                    />
+                  </div>
                 </div>
               </div>
             ))}
@@ -379,6 +388,7 @@ function DriverTableSkeleton() {
               </div>
             </TableHead>
             <TableHead className="font-medium">Name</TableHead>
+            <TableHead className="font-medium">Priority</TableHead>
             <TableHead className="font-medium">Availability</TableHead>
             <TableHead className="font-medium w-25">Actions</TableHead>
           </TableRow>
@@ -391,6 +401,9 @@ function DriverTableSkeleton() {
               </TableCell>
               <TableCell>
                 <Skeleton className="h-4 w-32" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-4 w-20" />
               </TableCell>
               <TableCell>
                 <div className="flex gap-1">

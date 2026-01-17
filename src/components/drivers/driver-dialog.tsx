@@ -27,6 +27,8 @@ export function DriverDialog({ open, onOpenChange, driver }: DriverDialogProps) 
   const handleSubmit = async (values: {
     name: string;
     availability: number[];
+    priority: number;
+    priorityNote?: string | null;
   }) => {
     if (isEditing && driver) {
       await updateDriver.mutateAsync({

@@ -20,14 +20,26 @@ export type DriverModel = runtime.Types.Result.DefaultSelection<Prisma.$DriverPa
 
 export type AggregateDriver = {
   _count: DriverCountAggregateOutputType | null
+  _avg: DriverAvgAggregateOutputType | null
+  _sum: DriverSumAggregateOutputType | null
   _min: DriverMinAggregateOutputType | null
   _max: DriverMaxAggregateOutputType | null
+}
+
+export type DriverAvgAggregateOutputType = {
+  priority: number | null
+}
+
+export type DriverSumAggregateOutputType = {
+  priority: number | null
 }
 
 export type DriverMinAggregateOutputType = {
   id: string | null
   name: string | null
   isActive: boolean | null
+  priority: number | null
+  priorityNote: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -36,6 +48,8 @@ export type DriverMaxAggregateOutputType = {
   id: string | null
   name: string | null
   isActive: boolean | null
+  priority: number | null
+  priorityNote: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -44,16 +58,28 @@ export type DriverCountAggregateOutputType = {
   id: number
   name: number
   isActive: number
+  priority: number
+  priorityNote: number
   createdAt: number
   updatedAt: number
   _all: number
 }
 
 
+export type DriverAvgAggregateInputType = {
+  priority?: true
+}
+
+export type DriverSumAggregateInputType = {
+  priority?: true
+}
+
 export type DriverMinAggregateInputType = {
   id?: true
   name?: true
   isActive?: true
+  priority?: true
+  priorityNote?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -62,6 +88,8 @@ export type DriverMaxAggregateInputType = {
   id?: true
   name?: true
   isActive?: true
+  priority?: true
+  priorityNote?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -70,6 +98,8 @@ export type DriverCountAggregateInputType = {
   id?: true
   name?: true
   isActive?: true
+  priority?: true
+  priorityNote?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -113,6 +143,18 @@ export type DriverAggregateArgs<ExtArgs extends runtime.Types.Extensions.Interna
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: DriverAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: DriverSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: DriverMinAggregateInputType
@@ -143,6 +185,8 @@ export type DriverGroupByArgs<ExtArgs extends runtime.Types.Extensions.InternalA
   take?: number
   skip?: number
   _count?: DriverCountAggregateInputType | true
+  _avg?: DriverAvgAggregateInputType
+  _sum?: DriverSumAggregateInputType
   _min?: DriverMinAggregateInputType
   _max?: DriverMaxAggregateInputType
 }
@@ -151,9 +195,13 @@ export type DriverGroupByOutputType = {
   id: string
   name: string
   isActive: boolean
+  priority: number
+  priorityNote: string | null
   createdAt: Date
   updatedAt: Date
   _count: DriverCountAggregateOutputType | null
+  _avg: DriverAvgAggregateOutputType | null
+  _sum: DriverSumAggregateOutputType | null
   _min: DriverMinAggregateOutputType | null
   _max: DriverMaxAggregateOutputType | null
 }
@@ -180,6 +228,8 @@ export type DriverWhereInput = {
   id?: Prisma.StringFilter<"Driver"> | string
   name?: Prisma.StringFilter<"Driver"> | string
   isActive?: Prisma.BoolFilter<"Driver"> | boolean
+  priority?: Prisma.IntFilter<"Driver"> | number
+  priorityNote?: Prisma.StringNullableFilter<"Driver"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Driver"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Driver"> | Date | string
   availability?: Prisma.DriverAvailabilityListRelationFilter
@@ -190,6 +240,8 @@ export type DriverOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  priority?: Prisma.SortOrder
+  priorityNote?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   availability?: Prisma.DriverAvailabilityOrderByRelationAggregateInput
@@ -203,6 +255,8 @@ export type DriverWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.DriverWhereInput | Prisma.DriverWhereInput[]
   name?: Prisma.StringFilter<"Driver"> | string
   isActive?: Prisma.BoolFilter<"Driver"> | boolean
+  priority?: Prisma.IntFilter<"Driver"> | number
+  priorityNote?: Prisma.StringNullableFilter<"Driver"> | string | null
   createdAt?: Prisma.DateTimeFilter<"Driver"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Driver"> | Date | string
   availability?: Prisma.DriverAvailabilityListRelationFilter
@@ -213,11 +267,15 @@ export type DriverOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  priority?: Prisma.SortOrder
+  priorityNote?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.DriverCountOrderByAggregateInput
+  _avg?: Prisma.DriverAvgOrderByAggregateInput
   _max?: Prisma.DriverMaxOrderByAggregateInput
   _min?: Prisma.DriverMinOrderByAggregateInput
+  _sum?: Prisma.DriverSumOrderByAggregateInput
 }
 
 export type DriverScalarWhereWithAggregatesInput = {
@@ -227,6 +285,8 @@ export type DriverScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"Driver"> | string
   name?: Prisma.StringWithAggregatesFilter<"Driver"> | string
   isActive?: Prisma.BoolWithAggregatesFilter<"Driver"> | boolean
+  priority?: Prisma.IntWithAggregatesFilter<"Driver"> | number
+  priorityNote?: Prisma.StringNullableWithAggregatesFilter<"Driver"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Driver"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Driver"> | Date | string
 }
@@ -235,6 +295,8 @@ export type DriverCreateInput = {
   id?: string
   name: string
   isActive?: boolean
+  priority?: number
+  priorityNote?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   availability?: Prisma.DriverAvailabilityCreateNestedManyWithoutDriverInput
@@ -245,6 +307,8 @@ export type DriverUncheckedCreateInput = {
   id?: string
   name: string
   isActive?: boolean
+  priority?: number
+  priorityNote?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   availability?: Prisma.DriverAvailabilityUncheckedCreateNestedManyWithoutDriverInput
@@ -255,6 +319,8 @@ export type DriverUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  priority?: Prisma.IntFieldUpdateOperationsInput | number
+  priorityNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   availability?: Prisma.DriverAvailabilityUpdateManyWithoutDriverNestedInput
@@ -265,6 +331,8 @@ export type DriverUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  priority?: Prisma.IntFieldUpdateOperationsInput | number
+  priorityNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   availability?: Prisma.DriverAvailabilityUncheckedUpdateManyWithoutDriverNestedInput
@@ -275,6 +343,8 @@ export type DriverCreateManyInput = {
   id?: string
   name: string
   isActive?: boolean
+  priority?: number
+  priorityNote?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -283,6 +353,8 @@ export type DriverUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  priority?: Prisma.IntFieldUpdateOperationsInput | number
+  priorityNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -291,6 +363,8 @@ export type DriverUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  priority?: Prisma.IntFieldUpdateOperationsInput | number
+  priorityNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -299,14 +373,22 @@ export type DriverCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  priority?: Prisma.SortOrder
+  priorityNote?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type DriverAvgOrderByAggregateInput = {
+  priority?: Prisma.SortOrder
 }
 
 export type DriverMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  priority?: Prisma.SortOrder
+  priorityNote?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -315,8 +397,14 @@ export type DriverMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   name?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  priority?: Prisma.SortOrder
+  priorityNote?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+}
+
+export type DriverSumOrderByAggregateInput = {
+  priority?: Prisma.SortOrder
 }
 
 export type DriverScalarRelationFilter = {
@@ -330,6 +418,18 @@ export type StringFieldUpdateOperationsInput = {
 
 export type BoolFieldUpdateOperationsInput = {
   set?: boolean
+}
+
+export type IntFieldUpdateOperationsInput = {
+  set?: number
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
+}
+
+export type NullableStringFieldUpdateOperationsInput = {
+  set?: string | null
 }
 
 export type DateTimeFieldUpdateOperationsInput = {
@@ -368,6 +468,8 @@ export type DriverCreateWithoutAvailabilityInput = {
   id?: string
   name: string
   isActive?: boolean
+  priority?: number
+  priorityNote?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   assignments?: Prisma.TripAssignmentCreateNestedManyWithoutDriverInput
@@ -377,6 +479,8 @@ export type DriverUncheckedCreateWithoutAvailabilityInput = {
   id?: string
   name: string
   isActive?: boolean
+  priority?: number
+  priorityNote?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   assignments?: Prisma.TripAssignmentUncheckedCreateNestedManyWithoutDriverInput
@@ -402,6 +506,8 @@ export type DriverUpdateWithoutAvailabilityInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  priority?: Prisma.IntFieldUpdateOperationsInput | number
+  priorityNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   assignments?: Prisma.TripAssignmentUpdateManyWithoutDriverNestedInput
@@ -411,6 +517,8 @@ export type DriverUncheckedUpdateWithoutAvailabilityInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  priority?: Prisma.IntFieldUpdateOperationsInput | number
+  priorityNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   assignments?: Prisma.TripAssignmentUncheckedUpdateManyWithoutDriverNestedInput
@@ -420,6 +528,8 @@ export type DriverCreateWithoutAssignmentsInput = {
   id?: string
   name: string
   isActive?: boolean
+  priority?: number
+  priorityNote?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   availability?: Prisma.DriverAvailabilityCreateNestedManyWithoutDriverInput
@@ -429,6 +539,8 @@ export type DriverUncheckedCreateWithoutAssignmentsInput = {
   id?: string
   name: string
   isActive?: boolean
+  priority?: number
+  priorityNote?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   availability?: Prisma.DriverAvailabilityUncheckedCreateNestedManyWithoutDriverInput
@@ -454,6 +566,8 @@ export type DriverUpdateWithoutAssignmentsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  priority?: Prisma.IntFieldUpdateOperationsInput | number
+  priorityNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   availability?: Prisma.DriverAvailabilityUpdateManyWithoutDriverNestedInput
@@ -463,6 +577,8 @@ export type DriverUncheckedUpdateWithoutAssignmentsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  priority?: Prisma.IntFieldUpdateOperationsInput | number
+  priorityNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   availability?: Prisma.DriverAvailabilityUncheckedUpdateManyWithoutDriverNestedInput
@@ -512,6 +628,8 @@ export type DriverSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   id?: boolean
   name?: boolean
   isActive?: boolean
+  priority?: boolean
+  priorityNote?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   availability?: boolean | Prisma.Driver$availabilityArgs<ExtArgs>
@@ -523,6 +641,8 @@ export type DriverSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   id?: boolean
   name?: boolean
   isActive?: boolean
+  priority?: boolean
+  priorityNote?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["driver"]>
@@ -531,6 +651,8 @@ export type DriverSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   id?: boolean
   name?: boolean
   isActive?: boolean
+  priority?: boolean
+  priorityNote?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }, ExtArgs["result"]["driver"]>
@@ -539,11 +661,13 @@ export type DriverSelectScalar = {
   id?: boolean
   name?: boolean
   isActive?: boolean
+  priority?: boolean
+  priorityNote?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type DriverOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["driver"]>
+export type DriverOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "isActive" | "priority" | "priorityNote" | "createdAt" | "updatedAt", ExtArgs["result"]["driver"]>
 export type DriverInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   availability?: boolean | Prisma.Driver$availabilityArgs<ExtArgs>
   assignments?: boolean | Prisma.Driver$assignmentsArgs<ExtArgs>
@@ -562,6 +686,8 @@ export type $DriverPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     id: string
     name: string
     isActive: boolean
+    priority: number
+    priorityNote: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["driver"]>
@@ -992,6 +1118,8 @@ export interface DriverFieldRefs {
   readonly id: Prisma.FieldRef<"Driver", 'String'>
   readonly name: Prisma.FieldRef<"Driver", 'String'>
   readonly isActive: Prisma.FieldRef<"Driver", 'Boolean'>
+  readonly priority: Prisma.FieldRef<"Driver", 'Int'>
+  readonly priorityNote: Prisma.FieldRef<"Driver", 'String'>
   readonly createdAt: Prisma.FieldRef<"Driver", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Driver", 'DateTime'>
 }

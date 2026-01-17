@@ -26,11 +26,13 @@ enum UploadStatus {
 // ============================================
 
 model Driver {
-  id        String   @id @default(cuid())
-  name      String
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String   @id @default(cuid())
+  name         String
+  isActive     Boolean  @default(true)
+  priority     Int      @default(2) // 1 = High, 2 = Medium, 3 = Low
+  priorityNote String?  @db.Text // Notes explaining the priority level
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   // Relations
   availability DriverAvailability[]
@@ -38,6 +40,7 @@ model Driver {
 
   @@index([name])
   @@index([isActive])
+  @@index([priority])
 }
 
 model DriverAvailability {

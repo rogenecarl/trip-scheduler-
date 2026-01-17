@@ -19,6 +19,8 @@ import type {
 const driverSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   availability: z.array(z.number().min(0).max(6)).min(1, "Select at least one day"),
+  priority: z.number().min(1).max(3).default(2), // 1 = High, 2 = Medium, 3 = Low
+  priorityNote: z.string().optional().nullable(),
 });
 
 // ============================================
@@ -123,8 +125,10 @@ export async function createDriver(
   try {
     const name = formData.get("name") as string;
     const availability = JSON.parse(formData.get("availability") as string);
+    const priority = parseInt(formData.get("priority") as string) || 2;
+    const priorityNote = formData.get("priorityNote") as string | null;
 
-    const validated = driverSchema.safeParse({ name, availability });
+    const validated = driverSchema.safeParse({ name, availability, priority, priorityNote });
     if (!validated.success) {
       return { success: false, error: validated.error.issues[0].message };
     }
@@ -132,6 +136,8 @@ export async function createDriver(
     const driver = await prisma.driver.create({
       data: {
         name: validated.data.name,
+        priority: validated.data.priority,
+        priorityNote: validated.data.priorityNote || null,
         availability: {
           create: validated.data.availability.map((day: number) => ({
             dayOfWeek: day,
@@ -166,8 +172,10 @@ export async function updateDriver(
   try {
     const name = formData.get("name") as string;
     const availability = JSON.parse(formData.get("availability") as string);
+    const priority = parseInt(formData.get("priority") as string) || 2;
+    const priorityNote = formData.get("priorityNote") as string | null;
 
-    const validated = driverSchema.safeParse({ name, availability });
+    const validated = driverSchema.safeParse({ name, availability, priority, priorityNote });
     if (!validated.success) {
       return { success: false, error: validated.error.issues[0].message };
     }
@@ -179,6 +187,8 @@ export async function updateDriver(
         where: { id },
         data: {
           name: validated.data.name,
+          priority: validated.data.priority,
+          priorityNote: validated.data.priorityNote || null,
           availability: {
             create: validated.data.availability.map((day: number) => ({
               dayOfWeek: day,

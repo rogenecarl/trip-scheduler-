@@ -78,6 +78,8 @@ export const DriverScalarFieldEnum = {
   id: 'id',
   name: 'name',
   isActive: 'isActive',
+  priority: 'priority',
+  priorityNote: 'priorityNote',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
